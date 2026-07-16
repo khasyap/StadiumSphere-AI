@@ -20,4 +20,12 @@
    `pnpm test`.
 
 For a containerized local environment, run `docker compose up --build`. The local `.env` file is the
-single source for Compose interpolation and application runtime configuration.
+single source for Compose interpolation and application runtime configuration. This starts MongoDB and
+Redis with persistent volumes and health checks.
+
+## API persistence configuration
+
+`apps/api/.env` must define `MONGODB_URI`, `MONGODB_DATABASE`,
+`MONGODB_SERVER_SELECTION_TIMEOUT_MS`, `REDIS_HOST`, and `REDIS_PORT` before starting the API.
+`REDIS_PASSWORD` is optional. The provided `.env.example` files contain local values; use the root `.env`
+values for Docker Compose and the API-local values for standalone API development.

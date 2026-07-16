@@ -2,7 +2,6 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 // Nest reflection needs this runtime symbol to resolve constructor injection.
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { HealthService } from './health.service';
 import type { HealthResponse } from './health.types';
 

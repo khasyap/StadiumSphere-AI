@@ -27,6 +27,14 @@ The services expose technical health endpoints only:
 - API: `http://localhost:3000/api/v1/health`
 - AI service: `http://localhost:8000/health`
 
+## Persistence services
+
+Phase 12.1 requires MongoDB and Redis. Start the complete local environment with
+`docker compose up --build`; Compose provisions both services with persistent volumes and waits for
+their health checks before starting the API. For standalone API development, provide the following
+values in `apps/api/.env`: `MONGODB_URI`, `MONGODB_DATABASE`,
+`MONGODB_SERVER_SELECTION_TIMEOUT_MS`, `REDIS_HOST`, and `REDIS_PORT`. `REDIS_PASSWORD` is optional.
+
 ## Workspace commands
 
 | Command             | Purpose                                         |

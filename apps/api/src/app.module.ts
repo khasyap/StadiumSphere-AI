@@ -7,6 +7,8 @@ import pino from 'pino';
 import { HealthModule } from './common/health/health.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { type ApiEnvironment, validateEnvironment } from './config/environment.validation';
+import { DatabaseModule } from './infrastructure/database/database.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { type ApiEnvironment, validateEnvironment } from './config/environment.v
         }),
       },
     }),
+    DatabaseModule,
+    RedisModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configuration: ConfigService<ApiEnvironment, true>) => [
