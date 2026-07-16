@@ -6,8 +6,10 @@ import type { HealthResponse } from './health.types';
 export class HealthService {
   public getHealth(): HealthResponse {
     return {
-      status: 'healthy',
+      service: 'api',
+      status: 'ok',
       timestamp: new Date().toISOString(),
+      version: '0.1.0',
     };
   }
 }

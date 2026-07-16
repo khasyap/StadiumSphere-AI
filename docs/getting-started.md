@@ -10,9 +10,12 @@
 
 ## Initialize the workspace
 
-1. Copy `.env.example` to `.env`.
+1. Copy each application environment example to its local `.env` file: `apps/web/.env.example` to
+   `apps/web/.env`, `apps/api/.env.example` to `apps/api/.env`, and `apps/ai/.env.example` to
+   `apps/ai/.env`. The root `.env.example` is only for Docker Compose.
 2. Run `pnpm install` at the repository root.
-3. Run `uv sync --directory apps/ai`.
+3. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) before running `pnpm ai:dev`,
+   then run `uv sync --directory apps/ai`.
 4. Verify the foundation with `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, and
    `pnpm test`.
 

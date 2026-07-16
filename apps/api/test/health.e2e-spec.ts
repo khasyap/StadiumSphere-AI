@@ -18,10 +18,15 @@ describe('API foundation health', () => {
     await application.close();
   });
 
-  it('returns a healthy technical response and correlation identifier', async () => {
+  it('returns the API health contract and correlation identifier', async () => {
     const response = await request(application.getHttpServer()).get('/api/v1/health').expect(200);
 
-    expect(response.body.status).toBe('healthy');
+    expect(response.body).toMatchObject({
+      service: 'api',
+      status: 'ok',
+      version: '0.1.0',
+    });
+    expect(response.body.timestamp).toEqual(expect.any(String));
     expect(response.headers['x-correlation-id']).toEqual(expect.any(String));
   });
 });

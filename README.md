@@ -12,10 +12,13 @@ no business domains, database models, authentication, or AI agents.
 
 ## Quick start
 
-1. Copy `.env.example` to `.env` and review the local values.
+1. Copy each application environment example before local development:
+   `apps/web/.env.example` to `apps/web/.env`, `apps/api/.env.example` to `apps/api/.env`,
+   and `apps/ai/.env.example` to `apps/ai/.env`. The root `.env.example` is for Docker Compose.
 2. Install JavaScript dependencies with `pnpm install`.
-3. Install Python dependencies with `uv sync --directory apps/ai`.
-4. Run all JavaScript applications with `pnpm dev`, or start the complete stack with
+3. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) before any `pnpm ai:*`
+   command, then install Python dependencies with `uv sync --directory apps/ai`.
+4. Run all JavaScript applications with `pnpm dev`, start the AI service with `pnpm ai:dev`, or start the complete stack with
    `docker compose up --build`.
 
 The services expose technical health endpoints only:
