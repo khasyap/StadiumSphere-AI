@@ -1,0 +1,19 @@
+name: Feature request
+description: Propose a future platform capability.
+title: '[Feature]: '
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: Explain the operational need and intended users.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed outcome
+      description: Describe the desired capability without prescribing an implementation.
+    validations:
+      required: true

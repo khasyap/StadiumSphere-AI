@@ -1,0 +1,1 @@
+"""StadiumSphere AI service foundation."""

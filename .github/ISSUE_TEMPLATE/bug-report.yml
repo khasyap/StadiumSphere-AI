@@ -1,0 +1,26 @@
+name: Bug report
+description: Report a reproducible defect in the platform foundation or a future feature.
+title: '[Bug]: '
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the observed behavior and its impact.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest reliable sequence of steps.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include operating system, runtime versions, and relevant non-secret configuration.
+    validations:
+      required: true
