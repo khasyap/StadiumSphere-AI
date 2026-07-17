@@ -58,6 +58,13 @@ transport-agnostic commands, queries, DTOs, repository ports, mappers, validator
 application services. These components may depend on domain types but never on infrastructure implementations.
 No application workflow, controller, endpoint, authentication, or repository adapter is included.
 
+## Infrastructure repositories
+
+Phase 12.5 connects application repository ports to MongoDB adapters under
+`apps/api/src/infrastructure`. Adapters compose the generic persistence `BaseRepository`, while dedicated
+mappers translate only between Mongo documents and domain entities. Schemas define collections, indexes,
+timestamps, and persistence field shapes; domain validation and business rules remain outside schemas.
+
 ## Workspace commands
 
 | Command             | Purpose                                         |

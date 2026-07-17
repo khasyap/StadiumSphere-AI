@@ -50,4 +50,12 @@ NestJS decorators, DTOs, persistence annotations, or transport concerns to the d
 Application-layer code belongs in `apps/api/src/application`. Define repository ports there and make services
 depend only on those ports and domain types. Keep commands, queries, DTOs, mappers, validators, and application
 exceptions transport-agnostic. Repository adapters, controllers, and dependency-injection bindings belong to
-later phases and must not be imported by the application layer.
+the infrastructure layer and must not be imported by the application layer.
+
+## Repository adapter guidance
+
+MongoDB repository adapters live in `apps/api/src/infrastructure/repositories` and are registered through
+`RepositoryModule`. They implement application ports and compose the shared `BaseRepository` for generic CRUD
+and persistence-exception translation. Keep Mongoose schemas limited to collection/index/timestamp/field-shape
+concerns, and use infrastructure mappers only for document-to-domain conversion; DTO conversion remains in the
+application layer.

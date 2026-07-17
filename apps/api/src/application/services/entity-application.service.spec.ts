@@ -13,8 +13,11 @@ describe('EntityApplicationService', () => {
 
   it('coordinates a repository port and mapper to read entities', async () => {
     const repository: ApplicationRepository<User> = {
+      create: jest.fn(async (entity: User) => entity),
+      delete: jest.fn(async () => undefined),
       findAll: jest.fn(async () => [user]),
       findById: jest.fn(async () => user),
+      update: jest.fn(async (_id: UniqueEntityId, entity: User) => entity),
     };
 
     const service = createService(repository);
@@ -28,8 +31,11 @@ describe('EntityApplicationService', () => {
 
   it('raises an application exception when a repository port has no entity', async () => {
     const repository: ApplicationRepository<User> = {
+      create: jest.fn(async (entity: User) => entity),
+      delete: jest.fn(async () => undefined),
       findAll: jest.fn(async () => []),
       findById: jest.fn(async () => null),
+      update: jest.fn(async (_id: UniqueEntityId, entity: User) => entity),
     };
 
     await expect(createService(repository).findById('missing-user')).rejects.toThrow(
