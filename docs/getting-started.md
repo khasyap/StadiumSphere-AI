@@ -59,3 +59,11 @@ MongoDB repository adapters live in `apps/api/src/infrastructure/repositories` a
 and persistence-exception translation. Keep Mongoose schemas limited to collection/index/timestamp/field-shape
 concerns, and use infrastructure mappers only for document-to-domain conversion; DTO conversion remains in the
 application layer.
+
+## REST presentation guidance
+
+REST controllers, request DTOs, reusable response models, and Swagger metadata live in
+`apps/api/src/presentation`. DTOs use `class-validator` and are compatible with the existing global
+`ValidationPipe`. Controllers must delegate to application-service contracts only—never to repositories,
+Mongoose models, or infrastructure mappers. With `SWAGGER_ENABLED=true`, use `/api-docs` to inspect endpoints
+when the presentation module is composed into the API.

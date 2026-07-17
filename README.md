@@ -65,6 +65,13 @@ Phase 12.5 connects application repository ports to MongoDB adapters under
 mappers translate only between Mongo documents and domain entities. Schemas define collections, indexes,
 timestamps, and persistence field shapes; domain validation and business rules remain outside schemas.
 
+## Presentation layer
+
+Phase 12.6 adds REST presentation adapters under `apps/api/src/presentation`. Controllers validate transport DTOs,
+delegate directly to application-service contracts, and return standard success envelopes. They do not map domain
+objects, access persistence, or implement business logic. Swagger is already configured at `/api-docs` when
+`SWAGGER_ENABLED=true`; composed presentation controllers are documented automatically.
+
 ## Workspace commands
 
 | Command             | Purpose                                         |

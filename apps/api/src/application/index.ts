@@ -7,6 +7,7 @@ export * from './exceptions/application-validation.exception';
 export * from './interfaces/application-repository.interface';
 export * from './interfaces/application-validator.interface';
 export * from './interfaces/mapper.interface';
+export * from './interfaces/rest-application-service.interface';
 export * from './mappers/user.mapper';
 export * from './queries/query';
 export * from './services/entity-application.service';
