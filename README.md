@@ -43,6 +43,14 @@ injected Mongoose model. The layer supplies typed filtering, multi-field ascendi
 projection and population options, pagination metadata, and persistence-specific exceptions. It does not
 contain any business repository, schema, or endpoint.
 
+## Domain foundation
+
+Phase 12.3 provides framework-independent domain building blocks in
+`apps/api/src/domain`: identifiers, entities, aggregate roots, value objects, domain-validation
+exceptions, domain-event contracts, and shared lifecycle interfaces. Aggregate roots collect events only;
+they do not publish them. The lightweight placeholder entities are not connected to persistence, transport,
+authentication, or business workflows.
+
 ## Workspace commands
 
 | Command             | Purpose                                         |

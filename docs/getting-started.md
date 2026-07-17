@@ -37,3 +37,10 @@ repository should extend `BaseRepository` and receive its Mongoose model through
 Use `RepositoryOptions` to combine generic MongoDB filters, typed multi-field sort directions, projection,
 population, and page/limit pagination. `findMany` returns data together with offset, total-page, and
 next/previous-page metadata. Do not place business rules, schemas, or HTTP handlers in this layer.
+
+## Domain development guidance
+
+Reusable domain primitives live in `apps/api/src/domain`. Use `Entity` and `AggregateRoot` with
+`UniqueEntityId` for identity, and use validated value objects for domain data. Aggregate roots only collect
+domain events in this phase; event dispatching belongs to a later application-layer integration. Do not add
+NestJS decorators, DTOs, persistence annotations, or transport concerns to the domain layer.

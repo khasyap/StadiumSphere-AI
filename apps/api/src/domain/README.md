@@ -1,4 +1,8 @@
 # Domain layer
 
-The domain layer will contain framework-independent business entities, value objects, services, and
-interfaces. It intentionally has no Phase 11 implementation because business modeling is out of scope.
+Phase 12.3 provides framework-independent domain primitives: entities, aggregate roots, identifiers,
+value objects, validation exceptions, domain-event contracts, and shared interfaces. It has no
+persistence mappings, controllers, DTOs, authentication, or event publishing.
+
+Domain events are collected by aggregate roots for a later application-layer integration. This layer
+does not publish events or contain business workflows.
