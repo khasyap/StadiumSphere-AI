@@ -51,6 +51,13 @@ exceptions, domain-event contracts, and shared lifecycle interfaces. Aggregate r
 they do not publish them. The lightweight placeholder entities are not connected to persistence, transport,
 authentication, or business workflows.
 
+## Application foundation
+
+Phase 12.4 adds the Clean Architecture application boundary under `apps/api/src/application`. It contains
+transport-agnostic commands, queries, DTOs, repository ports, mappers, validators, exceptions, and generic
+application services. These components may depend on domain types but never on infrastructure implementations.
+No application workflow, controller, endpoint, authentication, or repository adapter is included.
+
 ## Workspace commands
 
 | Command             | Purpose                                         |

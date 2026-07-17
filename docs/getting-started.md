@@ -44,3 +44,10 @@ Reusable domain primitives live in `apps/api/src/domain`. Use `Entity` and `Aggr
 `UniqueEntityId` for identity, and use validated value objects for domain data. Aggregate roots only collect
 domain events in this phase; event dispatching belongs to a later application-layer integration. Do not add
 NestJS decorators, DTOs, persistence annotations, or transport concerns to the domain layer.
+
+## Application development guidance
+
+Application-layer code belongs in `apps/api/src/application`. Define repository ports there and make services
+depend only on those ports and domain types. Keep commands, queries, DTOs, mappers, validators, and application
+exceptions transport-agnostic. Repository adapters, controllers, and dependency-injection bindings belong to
+later phases and must not be imported by the application layer.
