@@ -29,3 +29,11 @@ Redis with persistent volumes and health checks.
 `MONGODB_SERVER_SELECTION_TIMEOUT_MS`, `REDIS_HOST`, and `REDIS_PORT` before starting the API.
 `REDIS_PASSWORD` is optional. The provided `.env.example` files contain local values; use the root `.env`
 values for Docker Compose and the API-local values for standalone API development.
+
+## Repository development guidance
+
+Persistence utilities are available from `apps/api/src/infrastructure/persistence`. A future domain
+repository should extend `BaseRepository` and receive its Mongoose model through NestJS dependency injection.
+Use `RepositoryOptions` to combine generic MongoDB filters, typed multi-field sort directions, projection,
+population, and page/limit pagination. `findMany` returns data together with offset, total-page, and
+next/previous-page metadata. Do not place business rules, schemas, or HTTP handlers in this layer.

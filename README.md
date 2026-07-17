@@ -35,6 +35,14 @@ their health checks before starting the API. For standalone API development, pro
 values in `apps/api/.env`: `MONGODB_URI`, `MONGODB_DATABASE`,
 `MONGODB_SERVER_SELECTION_TIMEOUT_MS`, `REDIS_HOST`, and `REDIS_PORT`. `REDIS_PASSWORD` is optional.
 
+## Repository persistence layer
+
+Phase 12.2 provides generic MongoDB repository utilities under
+`apps/api/src/infrastructure/persistence`. Future domain repositories extend `BaseRepository` with an
+injected Mongoose model. The layer supplies typed filtering, multi-field ascending or descending sorting,
+projection and population options, pagination metadata, and persistence-specific exceptions. It does not
+contain any business repository, schema, or endpoint.
+
 ## Workspace commands
 
 | Command             | Purpose                                         |
