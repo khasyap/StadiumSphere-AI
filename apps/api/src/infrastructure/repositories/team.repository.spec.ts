@@ -24,6 +24,7 @@ const createModel = (): Model<TeamPersistence> => {
   return {
     countDocuments: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(1) }),
     create: jest.fn().mockResolvedValue(document),
+    exists: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(true) }),
     find: jest.fn().mockReturnValue(collectionQuery),
     findById: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
     findByIdAndDelete: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
@@ -54,5 +55,12 @@ describe('TeamRepository', () => {
     jest.mocked(model.create).mockRejectedValueOnce({ code: 11_000 });
 
     await expect(new TeamRepository(model).create(team)).rejects.toBeInstanceOf(DuplicateEntityException);
+  });
+
+  it('checks Team references through the shared repository infrastructure', async () => {
+    const model = createModel();
+
+    await expect(new TeamRepository(model).existsBySportId(new UniqueEntityId('sport-1'))).resolves.toBe(true);
+    expect(model.exists).toHaveBeenCalledWith({ sportId: 'sport-1' });
   });
 });

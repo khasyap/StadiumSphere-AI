@@ -1,6 +1,7 @@
 import type { ApplicationRepository } from '../../application';
 import type { UniqueEntityId } from '../../domain';
 import { BaseRepository } from '../persistence';
+import type { FilterOptions } from '../persistence';
 import type { PersistenceMapper, PersistenceRecord } from '../mappers/persistence-mapper.interface';
 import type { HydratedDocument, Model } from 'mongoose';
 
@@ -31,6 +32,10 @@ export abstract class MongoApplicationRepository<
 
   public async delete(id: UniqueEntityId): Promise<void> {
     await this.repository.delete(id.toString());
+  }
+
+  protected async exists(filter: FilterOptions<TPersistence>): Promise<boolean> {
+    return this.repository.exists(filter);
   }
 
   public async findAll(): Promise<readonly TDomain[]> {

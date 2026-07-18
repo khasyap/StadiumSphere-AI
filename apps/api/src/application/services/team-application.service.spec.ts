@@ -1,5 +1,7 @@
 import { Sport, Team, UniqueEntityId } from '../../domain';
-import type { TeamRepositoryPort } from '../interfaces/application-repository.interface';
+import { ApplicationEntityNotFoundException } from '../exceptions/application-entity-not-found.exception';
+import { ApplicationValidationException } from '../exceptions/application-validation.exception';
+import type { SportRepositoryPort, TeamRepositoryPort } from '../interfaces/application-repository.interface';
 import { TeamApplicationService } from './team-application.service';
 
 describe('TeamApplicationService', () => {
@@ -10,11 +12,19 @@ describe('TeamApplicationService', () => {
   const repository: jest.Mocked<TeamRepositoryPort> = {
     create: jest.fn(async (entity: Team) => entity),
     delete: jest.fn(async (_id: UniqueEntityId) => undefined),
+    existsBySportId: jest.fn(async (_sportId: UniqueEntityId) => false),
     findAll: jest.fn(async () => [team]),
     findById: jest.fn(async (_id: UniqueEntityId) => team),
     update: jest.fn(async (_id: UniqueEntityId, entity: Team) => entity),
   };
-  const service = new TeamApplicationService(repository);
+  const sportRepository: jest.Mocked<SportRepositoryPort> = {
+    create: jest.fn(async (entity: Sport) => entity),
+    delete: jest.fn(async (_id: UniqueEntityId) => undefined),
+    findAll: jest.fn(async () => [team.toJSON().sport]),
+    findById: jest.fn(async (_id: UniqueEntityId) => team.toJSON().sport),
+    update: jest.fn(async (_id: UniqueEntityId, entity: Sport) => entity),
+  };
+  const service = new TeamApplicationService(repository, sportRepository);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -34,5 +44,19 @@ describe('TeamApplicationService', () => {
     expect(repository.create).toHaveBeenCalledTimes(1);
     expect(repository.update).toHaveBeenCalledTimes(1);
     expect(repository.delete).toHaveBeenCalledWith(new UniqueEntityId('team-1'));
+  });
+
+  it('rejects a missing Sport reference and inconsistent sport data', async () => {
+    jest.mocked(sportRepository.findById).mockResolvedValueOnce(null);
+
+    await expect(
+      service.create({ name: 'New Team', sportId: 'missing-sport', sportName: 'Football' }),
+    ).rejects.toBeInstanceOf(ApplicationEntityNotFoundException);
+    await expect(
+      service.create({ name: 'New Team', sportId: 'sport-1', sportName: 'Cricket' }),
+    ).rejects.toBeInstanceOf(ApplicationValidationException);
+    await expect(service.update('team-1', { sportName: 'Cricket' })).rejects.toBeInstanceOf(
+      ApplicationValidationException,
+    );
   });
 });

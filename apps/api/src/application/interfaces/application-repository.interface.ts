@@ -21,7 +21,9 @@ export interface ApplicationRepository<TEntity> {
 export type UserRepositoryPort = ApplicationRepository<User>;
 export type StadiumRepositoryPort = ApplicationRepository<Stadium>;
 export type VenueRepositoryPort = ApplicationRepository<Venue>;
-export type TeamRepositoryPort = ApplicationRepository<Team>;
+export interface TeamRepositoryPort extends ApplicationRepository<Team> {
+  existsBySportId(sportId: UniqueEntityId): Promise<boolean>;
+}
 export type OrganizationRepositoryPort = ApplicationRepository<Organization>;
 export type BookingRepositoryPort = ApplicationRepository<Booking>;
 export type SportRepositoryPort = ApplicationRepository<Sport>;

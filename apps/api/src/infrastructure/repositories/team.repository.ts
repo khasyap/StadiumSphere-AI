@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
 
 import type { TeamRepositoryPort } from '../../application';
-import type { Team } from '../../domain';
+import type { Team, UniqueEntityId } from '../../domain';
 import { TeamPersistenceMapper } from '../mappers/team.persistence-mapper';
 import { TEAM_PERSISTENCE_MODEL } from '../schemas/team.schema';
 import type { TeamPersistence } from '../schemas/team.schema';
@@ -16,5 +16,9 @@ export class TeamRepository
 {
   public constructor(@InjectModel(TEAM_PERSISTENCE_MODEL) model: Model<TeamPersistence>) {
     super(model, 'Team', new TeamPersistenceMapper());
+  }
+
+  public async existsBySportId(sportId: UniqueEntityId): Promise<boolean> {
+    return this.exists({ sportId: sportId.toString() });
   }
 }

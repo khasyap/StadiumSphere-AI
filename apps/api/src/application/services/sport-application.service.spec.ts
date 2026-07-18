@@ -1,5 +1,6 @@
 import { Sport, UniqueEntityId } from '../../domain';
-import type { SportRepositoryPort } from '../interfaces/application-repository.interface';
+import { ApplicationValidationException } from '../exceptions/application-validation.exception';
+import type { SportRepositoryPort, TeamRepositoryPort } from '../interfaces/application-repository.interface';
 import { SportApplicationService } from './sport-application.service';
 
 describe('SportApplicationService', () => {
@@ -11,7 +12,15 @@ describe('SportApplicationService', () => {
     findById: jest.fn(async (_id: UniqueEntityId) => sport),
     update: jest.fn(async (_id: UniqueEntityId, entity: Sport) => entity),
   };
-  const service = new SportApplicationService(repository);
+  const teamRepository: jest.Mocked<TeamRepositoryPort> = {
+    create: jest.fn(async (entity) => entity),
+    delete: jest.fn(async (_id: UniqueEntityId) => undefined),
+    existsBySportId: jest.fn(async (_sportId: UniqueEntityId) => false),
+    findAll: jest.fn(async () => []),
+    findById: jest.fn(async (_id: UniqueEntityId) => null),
+    update: jest.fn(async (_id: UniqueEntityId, entity) => entity),
+  };
+  const service = new SportApplicationService(repository, teamRepository);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -29,5 +38,11 @@ describe('SportApplicationService', () => {
     expect(repository.create).toHaveBeenCalledTimes(1);
     expect(repository.update).toHaveBeenCalledTimes(1);
     expect(repository.delete).toHaveBeenCalledWith(new UniqueEntityId('sport-1'));
+  });
+
+  it('prevents deletion while Teams reference the Sport', async () => {
+    jest.mocked(teamRepository.existsBySportId).mockResolvedValueOnce(true);
+
+    await expect(service.delete('sport-1')).rejects.toBeInstanceOf(ApplicationValidationException);
   });
 });
