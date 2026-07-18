@@ -8,6 +8,7 @@ import { CreateBookingDto } from './booking.dto';
 import { CreateEventDto } from './event.dto';
 import { CreateSportDto } from './sport.dto';
 import { CreateTeamDto } from './team.dto';
+import { LoginDto, RefreshTokenDto } from './authentication.dto';
 
 describe('presentation DTO validation', () => {
   it('rejects invalid transport email input', async () => {
@@ -73,5 +74,18 @@ describe('presentation DTO validation', () => {
     });
 
     await expect(validate(dto)).resolves.toHaveLength(1);
+  });
+
+  it('validates authentication credentials and refresh tokens', async () => {
+    const invalidLogin = Object.assign(new LoginDto(), { email: 'invalid', password: 'short' });
+    const validLogin = Object.assign(new LoginDto(), {
+      email: 'fan@example.com',
+      password: 'a-strong-password',
+    });
+    const invalidRefresh = Object.assign(new RefreshTokenDto(), { refreshToken: '' });
+
+    await expect(validate(invalidLogin)).resolves.toHaveLength(2);
+    await expect(validate(validLogin)).resolves.toHaveLength(0);
+    await expect(validate(invalidRefresh)).resolves.toHaveLength(1);
   });
 });

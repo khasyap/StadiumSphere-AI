@@ -48,6 +48,11 @@ export abstract class MongoApplicationRepository<
     return document === null ? null : this.mapToDomain(document);
   }
 
+  protected async findOne(filter: FilterOptions<TPersistence>): Promise<TDomain | null> {
+    const document = await this.repository.findOne(filter);
+    return document === null ? null : this.mapToDomain(document);
+  }
+
   public async update(id: UniqueEntityId, entity: TDomain): Promise<TDomain> {
     const document = await this.repository.update(id.toString(), {
       $set: this.mapper.toPersistence(entity),

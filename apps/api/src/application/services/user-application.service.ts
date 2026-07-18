@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { Email, User } from '../../domain';
+import type { UserProps } from '../../domain';
 import type { UserRepositoryPort } from '../interfaces/application-repository.interface';
 import { USER_REPOSITORY } from '../interfaces/application-repository.interface';
 import { CrudApplicationService } from './crud-application.service';
@@ -29,6 +30,16 @@ export class UserApplicationService extends CrudApplicationService<
 
   protected updateEntity(current: User, command: UserUpdateCommand): User {
     const user = current.toJSON();
-    return new User({ email: new Email(command.email ?? user.email.value) }, current.id);
+    const properties: UserProps = { email: new Email(command.email ?? user.email.value) };
+
+    if (current.passwordHash !== undefined) {
+      properties.passwordHash = current.passwordHash;
+    }
+
+    if (current.refreshTokenHash !== undefined) {
+      properties.refreshTokenHash = current.refreshTokenHash;
+    }
+
+    return new User(properties, current.id);
   }
 }

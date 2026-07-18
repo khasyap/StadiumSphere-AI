@@ -14,6 +14,11 @@ const environmentSchema = z.object({
   REDIS_PASSWORD: z.string().min(1).optional(),
   RATE_LIMIT_TTL_MS: z.coerce.number().int().positive(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive(),
+  JWT_ACCESS_SECRET: z.string().min(32),
+  JWT_ACCESS_EXPIRES_IN: z.coerce.number().int().positive(),
+  JWT_REFRESH_SECRET: z.string().min(32),
+  JWT_REFRESH_EXPIRES_IN: z.coerce.number().int().positive(),
+  BCRYPT_SALT_ROUNDS: z.coerce.number().int().min(10).max(14),
   SWAGGER_ENABLED: z.enum(['true', 'false']).transform((value) => value === 'true'),
 });
 

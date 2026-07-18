@@ -34,6 +34,9 @@ Phase 12.1 requires MongoDB and Redis. Start the complete local environment with
 their health checks before starting the API. For standalone API development, provide the following
 values in `apps/api/.env`: `MONGODB_URI`, `MONGODB_DATABASE`,
 `MONGODB_SERVER_SELECTION_TIMEOUT_MS`, `REDIS_HOST`, and `REDIS_PORT`. `REDIS_PASSWORD` is optional.
+Authentication also requires distinct `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` values of at least 32
+characters, numeric `JWT_ACCESS_EXPIRES_IN` and `JWT_REFRESH_EXPIRES_IN` values in seconds, and
+`BCRYPT_SALT_ROUNDS`. Replace the example JWT secrets before any shared deployment.
 
 ## Repository persistence layer
 

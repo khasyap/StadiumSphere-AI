@@ -1,5 +1,6 @@
 import type {
   Booking,
+  Email,
   Event,
   Organization,
   Sport,
@@ -18,7 +19,9 @@ export interface ApplicationRepository<TEntity> {
   update(id: UniqueEntityId, entity: TEntity): Promise<TEntity>;
 }
 
-export type UserRepositoryPort = ApplicationRepository<User>;
+export interface UserRepositoryPort extends ApplicationRepository<User> {
+  findByEmail(email: Email): Promise<User | null>;
+}
 export type StadiumRepositoryPort = ApplicationRepository<Stadium>;
 export type VenueRepositoryPort = ApplicationRepository<Venue>;
 export interface TeamRepositoryPort extends ApplicationRepository<Team> {

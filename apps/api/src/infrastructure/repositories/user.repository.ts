@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { Model } from 'mongoose';
 
 import type { UserRepositoryPort } from '../../application';
-import type { User } from '../../domain';
+import type { Email, User } from '../../domain';
 import { UserPersistenceMapper } from '../mappers/user.persistence-mapper';
 import { USER_PERSISTENCE_MODEL } from '../schemas/user.schema';
 import type { UserPersistence } from '../schemas/user.schema';
@@ -16,5 +16,9 @@ export class UserRepository
 {
   public constructor(@InjectModel(USER_PERSISTENCE_MODEL) model: Model<UserPersistence>) {
     super(model, 'User', new UserPersistenceMapper());
+  }
+
+  public async findByEmail(email: Email): Promise<User | null> {
+    return this.findOne({ email: email.value });
   }
 }

@@ -8,6 +8,7 @@ describe('UserApplicationService', () => {
     create: jest.fn(async (entity: User) => entity),
     delete: jest.fn(async (_id: UniqueEntityId) => undefined),
     findAll: jest.fn(async () => [user]),
+    findByEmail: jest.fn(async (_email: Email) => user),
     findById: jest.fn(async (_id: UniqueEntityId) => user),
     update: jest.fn(async (_id: UniqueEntityId, entity: User) => entity),
   };

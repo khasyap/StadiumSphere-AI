@@ -3,6 +3,11 @@ import { validateEnvironment } from './environment.validation';
 const validEnvironment = {
   API_PREFIX: 'api/v1',
   CORS_ORIGIN: 'http://localhost:5173',
+  BCRYPT_SALT_ROUNDS: '12',
+  JWT_ACCESS_EXPIRES_IN: '900',
+  JWT_ACCESS_SECRET: 'a-very-long-local-access-secret-that-is-at-least-32-characters',
+  JWT_REFRESH_EXPIRES_IN: '604800',
+  JWT_REFRESH_SECRET: 'a-very-long-local-refresh-secret-that-is-at-least-32-characters',
   LOG_LEVEL: 'info',
   MONGODB_DATABASE: 'stadiumsphere',
   MONGODB_URI: 'mongodb://localhost:27017',

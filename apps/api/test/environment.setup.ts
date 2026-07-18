@@ -1,6 +1,11 @@
 Object.assign(process.env, {
   API_PREFIX: 'api/v1',
+  BCRYPT_SALT_ROUNDS: '10',
   CORS_ORIGIN: 'http://localhost:5173',
+  JWT_ACCESS_EXPIRES_IN: '900',
+  JWT_ACCESS_SECRET: 'a-very-long-local-access-secret-that-is-at-least-32-characters',
+  JWT_REFRESH_EXPIRES_IN: '604800',
+  JWT_REFRESH_SECRET: 'a-very-long-local-refresh-secret-that-is-at-least-32-characters',
   LOG_LEVEL: 'error',
   MONGODB_DATABASE: 'stadiumsphere',
   MONGODB_URI: 'mongodb://localhost:27017',

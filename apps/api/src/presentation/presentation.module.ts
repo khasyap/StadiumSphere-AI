@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { ApplicationModule } from '../application';
 import { BookingController } from './controllers/booking.controller';
+import { AuthenticationController } from './controllers/authentication.controller';
 import { EventController } from './controllers/event.controller';
 import { OrganizationController } from './controllers/organization.controller';
 import { StadiumController } from './controllers/stadium.controller';
@@ -13,6 +14,7 @@ import { VenueController } from './controllers/venue.controller';
 @Module({
   imports: [ApplicationModule],
   controllers: [
+    AuthenticationController,
     UserController,
     StadiumController,
     VenueController,

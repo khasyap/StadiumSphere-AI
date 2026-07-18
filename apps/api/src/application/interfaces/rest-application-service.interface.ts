@@ -14,3 +14,4 @@ export const ORGANIZATION_APPLICATION_SERVICE = Symbol('Application.Organization
 export const BOOKING_APPLICATION_SERVICE = Symbol('Application.BookingService');
 export const SPORT_APPLICATION_SERVICE = Symbol('Application.SportService');
 export const EVENT_APPLICATION_SERVICE = Symbol('Application.EventService');
+export const AUTHENTICATION_APPLICATION_SERVICE = Symbol('Application.AuthenticationService');

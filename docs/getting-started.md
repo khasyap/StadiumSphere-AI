@@ -30,6 +30,12 @@ Redis with persistent volumes and health checks.
 `REDIS_PASSWORD` is optional. The provided `.env.example` files contain local values; use the root `.env`
 values for Docker Compose and the API-local values for standalone API development.
 
+## API authentication configuration
+
+`apps/api/.env` must also define distinct `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` values of at least
+32 characters, `JWT_ACCESS_EXPIRES_IN` and `JWT_REFRESH_EXPIRES_IN` in seconds, and `BCRYPT_SALT_ROUNDS`.
+Copy the API `.env.example` first, then replace its sample JWT secrets before any shared deployment.
+
 ## Repository development guidance
 
 Persistence utilities are available from `apps/api/src/infrastructure/persistence`. A future domain
