@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { DatabaseHealthService } from '../../infrastructure/database/database.health.service';
 import { RedisHealthService } from '../../infrastructure/redis/redis.health.service';
@@ -7,8 +7,9 @@ import type { HealthResponse } from './health.types';
 @Injectable()
 export class HealthService {
   public constructor(
+    @Inject(DatabaseHealthService)
     private readonly databaseHealthService: DatabaseHealthService,
-    private readonly redisHealthService: RedisHealthService,
+    @Inject(RedisHealthService) private readonly redisHealthService: RedisHealthService,
   ) {}
 
   public getHealth(): HealthResponse {
