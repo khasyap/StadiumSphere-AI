@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateVenueDto {
   @ApiProperty({ example: 13.0827 })
@@ -18,25 +18,30 @@ export class CreateVenueDto {
   public longitude!: number;
 
   @ApiProperty({ example: 'StadiumSphere Arena' })
+  @IsNotEmpty()
   @IsString()
   public name!: string;
 
   @ApiPropertyOptional({ example: '1 Stadium Way' })
+  @IsNotEmpty()
   @IsOptional()
   @IsString()
   public addressLine1?: string;
 
   @ApiPropertyOptional({ example: 'Chennai' })
+  @IsNotEmpty()
   @IsOptional()
   @IsString()
   public city?: string;
 
   @ApiPropertyOptional({ example: 'India' })
+  @IsNotEmpty()
   @IsOptional()
   @IsString()
   public country?: string;
 
   @ApiPropertyOptional({ example: '600001' })
+  @IsNotEmpty()
   @IsOptional()
   @IsString()
   public postalCode?: string;
@@ -60,6 +65,7 @@ export class UpdateVenueDto {
   public longitude?: number;
 
   @ApiPropertyOptional({ example: 'StadiumSphere Arena' })
+  @IsNotEmpty()
   @IsOptional()
   @IsString()
   public name?: string;

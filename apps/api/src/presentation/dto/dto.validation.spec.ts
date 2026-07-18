@@ -24,6 +24,12 @@ describe('presentation DTO validation', () => {
     await expect(validate(dto)).resolves.toHaveLength(0);
   });
 
+  it('rejects a blank stadium name', async () => {
+    const dto = Object.assign(new CreateStadiumDto(), { capacity: 50000, name: '' });
+
+    await expect(validate(dto)).resolves.toHaveLength(1);
+  });
+
   it('rejects out-of-range venue coordinates before application handling', async () => {
     const dto = Object.assign(new CreateVenueDto(), {
       latitude: 91,
@@ -32,5 +38,16 @@ describe('presentation DTO validation', () => {
     });
 
     await expect(validate(dto)).resolves.toHaveLength(1);
+  });
+
+  it('rejects blank venue text fields', async () => {
+    const dto = Object.assign(new CreateVenueDto(), {
+      addressLine1: '',
+      latitude: 13.0827,
+      longitude: 80.2707,
+      name: '',
+    });
+
+    await expect(validate(dto)).resolves.toHaveLength(2);
   });
 });

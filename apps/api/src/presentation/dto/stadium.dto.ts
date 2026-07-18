@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateStadiumDto {
   @ApiProperty({ example: 50000 })
@@ -10,6 +10,7 @@ export class CreateStadiumDto {
   public capacity!: number;
 
   @ApiProperty({ example: 'StadiumSphere Arena' })
+  @IsNotEmpty()
   @IsString()
   public name!: string;
 }
@@ -23,6 +24,7 @@ export class UpdateStadiumDto {
   public capacity?: number;
 
   @ApiPropertyOptional({ example: 'StadiumSphere Arena' })
+  @IsNotEmpty()
   @IsOptional()
   @IsString()
   public name?: string;
