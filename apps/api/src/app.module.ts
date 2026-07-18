@@ -9,6 +9,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
 import { type ApiEnvironment, validateEnvironment } from './config/environment.validation';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
+import { PresentationModule } from './presentation/presentation.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
     }),
     DatabaseModule,
     RedisModule,
+    PresentationModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configuration: ConfigService<ApiEnvironment, true>) => [

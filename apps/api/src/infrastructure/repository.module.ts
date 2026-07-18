@@ -10,7 +10,7 @@ import {
   TEAM_REPOSITORY,
   USER_REPOSITORY,
   VENUE_REPOSITORY,
-} from '../application';
+} from '../application/interfaces/application-repository.interface';
 import { BookingRepository } from './repositories/booking.repository';
 import { EventRepository } from './repositories/event.repository';
 import { OrganizationRepository } from './repositories/organization.repository';

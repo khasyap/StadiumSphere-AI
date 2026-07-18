@@ -49,8 +49,8 @@ NestJS decorators, DTOs, persistence annotations, or transport concerns to the d
 
 Application-layer code belongs in `apps/api/src/application`. Define repository ports there and make services
 depend only on those ports and domain types. Keep commands, queries, DTOs, mappers, validators, and application
-exceptions transport-agnostic. Repository adapters, controllers, and dependency-injection bindings belong to
-the infrastructure layer and must not be imported by the application layer.
+exceptions transport-agnostic. Repository adapters belong to infrastructure, while application-service bindings
+belong to `ApplicationModule`; neither may be imported directly by presentation controllers.
 
 ## Repository adapter guidance
 
@@ -67,3 +67,10 @@ REST controllers, request DTOs, reusable response models, and Swagger metadata l
 `ValidationPipe`. Controllers must delegate to application-service contracts only—never to repositories,
 Mongoose models, or infrastructure mappers. With `SWAGGER_ENABLED=true`, use `/api-docs` to inspect endpoints
 when the presentation module is composed into the API.
+
+## Application-service dependency injection
+
+`ApplicationModule` imports `RepositoryModule` and receives repository implementations through the existing
+application repository tokens. It registers and exports application-service tokens consumed by presentation
+controllers. The root `AppModule` imports `PresentationModule`; therefore controller requests flow through
+application services and repository ports without controllers directly importing infrastructure.

@@ -49,43 +49,55 @@ export abstract class BaseRepository<TEntity extends object> implements IReposit
     id: string,
     options?: Omit<RepositoryOptions<TEntity>, 'filter' | 'pagination' | 'sort'>,
   ): Promise<HydratedDocument<TEntity> | null> {
-    const query = this.model.findById(id);
-    this.applyReadOptions(query, options);
-    return query.exec();
+    return this.execute(() => {
+      const query = this.model.findById(id);
+      this.applyReadOptions(query, options);
+      return query.exec();
+    }, 'find');
   }
 
   public async findOne(
     filter: FilterOptions<TEntity>,
     options?: Omit<RepositoryOptions<TEntity>, 'filter' | 'pagination' | 'sort'>,
   ): Promise<HydratedDocument<TEntity> | null> {
-    const query = this.model.findOne(QueryBuilder.buildFilter(filter));
-    this.applyReadOptions(query, options);
-    return query.exec();
+    return this.execute(() => {
+      const query = this.model.findOne(QueryBuilder.buildFilter(filter));
+      this.applyReadOptions(query, options);
+      return query.exec();
+    }, 'find');
   }
 
   public async findMany(
     options?: RepositoryOptions<TEntity>,
   ): Promise<PaginationResult<HydratedDocument<TEntity>>> {
-    const pagination = PaginationHelper.create(options?.pagination);
-    const query = this.model.find(QueryBuilder.buildFilter(options?.filter));
+    return this.execute(async () => {
+      const pagination = PaginationHelper.create(options?.pagination);
+      const query = this.model.find(QueryBuilder.buildFilter(options?.filter));
 
-    this.applyReadOptions(query, options);
-    query
-      .skip(pagination.offset)
-      .limit(pagination.limit)
-      .sort(QueryBuilder.buildSort(options?.sort));
+      this.applyReadOptions(query, options);
+      query
+        .skip(pagination.offset)
+        .limit(pagination.limit)
+        .sort(QueryBuilder.buildSort(options?.sort));
 
-    const [data, total] = await Promise.all([query.exec(), this.count(options?.filter)]);
+      const [data, total] = await Promise.all([query.exec(), this.count(options?.filter)]);
 
-    return PaginationHelper.createResult(data, pagination, total);
+      return PaginationHelper.createResult(data, pagination, total);
+    }, 'find');
   }
 
   public async exists(filter: FilterOptions<TEntity>): Promise<boolean> {
-    return (await this.model.exists(QueryBuilder.buildFilter(filter)).exec()) !== null;
+    return this.execute(
+      async () => (await this.model.exists(QueryBuilder.buildFilter(filter)).exec()) !== null,
+      'check',
+    );
   }
 
   public async count(filter?: FilterOptions<TEntity>): Promise<number> {
-    return this.model.countDocuments(QueryBuilder.buildFilter(filter)).exec();
+    return this.execute(
+      () => this.model.countDocuments(QueryBuilder.buildFilter(filter)).exec(),
+      'count',
+    );
   }
 
   private applyReadOptions(

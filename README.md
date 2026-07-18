@@ -72,6 +72,13 @@ delegate directly to application-service contracts, and return standard success 
 objects, access persistence, or implement business logic. Swagger is already configured at `/api-docs` when
 `SWAGGER_ENABLED=true`; composed presentation controllers are documented automatically.
 
+## Application services and dependency injection
+
+Phase 12.7 provides concrete application services that coordinate domain entities through application repository
+ports. `ApplicationModule` imports `RepositoryModule`, binds application-service tokens to those services, and
+exports them to `PresentationModule`. The root module imports the presentation layer, producing the request flow:
+REST controller → application service → repository port → infrastructure adapter.
+
 ## Workspace commands
 
 | Command             | Purpose                                         |

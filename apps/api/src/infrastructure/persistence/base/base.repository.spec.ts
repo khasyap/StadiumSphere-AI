@@ -2,6 +2,7 @@ import type { Model } from 'mongoose';
 
 import { DuplicateEntityException } from '../exceptions/duplicate-entity.exception';
 import { EntityNotFoundException } from '../exceptions/entity-not-found.exception';
+import { PersistenceException } from '../exceptions/persistence.exception';
 import { BaseRepository } from './base.repository';
 
 interface ExampleEntity {
@@ -63,5 +64,22 @@ describe('BaseRepository', () => {
     await expect(
       new ExampleRepository(missingModel).update('example-id', { $set: { name: 'Arena' } }),
     ).rejects.toBeInstanceOf(EntityNotFoundException);
+  });
+
+  it('maps read failures to a persistence exception', async () => {
+    const query = {
+      exec: jest.fn().mockRejectedValue(new Error('MongoDB is unavailable')),
+      limit: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockReturnThis(),
+    };
+    const model = {
+      countDocuments: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(0) }),
+      find: jest.fn().mockReturnValue(query),
+    } as unknown as Model<ExampleEntity>;
+
+    await expect(new ExampleRepository(model).findMany()).rejects.toEqual(
+      new PersistenceException('Unable to find ExampleEntity.'),
+    );
   });
 });
