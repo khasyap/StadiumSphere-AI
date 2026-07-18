@@ -1,4 +1,4 @@
-import { Email, UniqueEntityId, User } from '../../domain';
+import { Email, UniqueEntityId, User, UserRole } from '../../domain';
 import { InvalidCredentialsException } from '../exceptions/invalid-credentials.exception';
 import { InvalidRefreshTokenException } from '../exceptions/invalid-refresh-token.exception';
 import type {
@@ -35,6 +35,7 @@ describe('AuthenticationApplicationService', () => {
     createRefreshToken: jest.fn(async (_payload): Promise<string> => 'refresh-token'),
     verifyRefreshToken: jest.fn(async (_token: string): Promise<AuthenticationTokenPayload> => ({
       email: 'fan@example.com',
+      role: UserRole.USER,
       sub: 'user-1',
       tokenType: 'refresh',
     })),

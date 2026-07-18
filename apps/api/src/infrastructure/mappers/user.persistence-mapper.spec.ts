@@ -1,4 +1,4 @@
-import { Email, UniqueEntityId, User } from '../../domain';
+import { Email, UniqueEntityId, User, UserRole } from '../../domain';
 import { UserPersistenceMapper } from './user.persistence-mapper';
 
 describe('UserPersistenceMapper', () => {
@@ -9,11 +9,12 @@ describe('UserPersistenceMapper', () => {
 
     expect(user).toBeInstanceOf(User);
     expect(user.toJSON()).toMatchObject({ id: 'user-1' });
+    expect(user.role).toBe(UserRole.USER);
   });
 
   it('maps a domain entity into persistence fields without DTO concerns', () => {
     const user = new User({ email: new Email('user@example.com') }, new UniqueEntityId('user-1'));
 
-    expect(mapper.toPersistence(user)).toEqual({ email: 'user@example.com' });
+    expect(mapper.toPersistence(user)).toEqual({ email: 'user@example.com', role: UserRole.USER });
   });
 });

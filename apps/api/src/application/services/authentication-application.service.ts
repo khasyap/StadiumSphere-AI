@@ -83,7 +83,7 @@ export class AuthenticationApplicationService {
 
   private async issueTokens(user: User): Promise<AuthenticationTokens> {
     const userJson = user.toJSON();
-    const payload = { email: userJson.email.value, sub: userJson.id };
+    const payload = { email: userJson.email.value, role: user.role, sub: userJson.id };
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.createAccessToken(payload),
       this.tokenService.createRefreshToken(payload),
@@ -97,6 +97,8 @@ export class AuthenticationApplicationService {
   private async persistRefreshTokenHash(user: User, refreshTokenHash: string | undefined): Promise<void> {
     const userJson = user.toJSON();
     const properties: UserProps = { email: userJson.email };
+
+    properties.role = user.role;
 
     if (user.passwordHash !== undefined) {
       properties.passwordHash = user.passwordHash;

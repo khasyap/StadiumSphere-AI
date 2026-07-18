@@ -1,5 +1,7 @@
 import { JwtService } from '@nestjs/jwt';
 
+import { UserRole } from '../../domain';
+
 import { JwtTokenService } from './jwt-token.service';
 
 describe('JwtTokenService', () => {
@@ -16,7 +18,7 @@ describe('JwtTokenService', () => {
   const service = new JwtTokenService(configuration as never, new JwtService());
 
   it('issues independent access and refresh tokens and verifies only refresh tokens', async () => {
-    const payload = { email: 'fan@example.com', sub: 'user-1' };
+    const payload = { email: 'fan@example.com', role: UserRole.ADMIN, sub: 'user-1' };
     const accessToken = await service.createAccessToken(payload);
     const refreshToken = await service.createRefreshToken(payload);
 

@@ -36,6 +36,7 @@ async function bootstrap(): Promise<void> {
       .setTitle('StadiumSphere AI API Foundation')
       .setDescription('Technical API foundation; no business capabilities are exposed.')
       .setVersion('v1')
+      .addBearerAuth()
       .build();
     const document = SwaggerModule.createDocument(application, documentConfiguration);
     SwaggerModule.setup('api-docs', application, document);

@@ -10,6 +10,8 @@ import { SportController } from './controllers/sport.controller';
 import { TeamController } from './controllers/team.controller';
 import { UserController } from './controllers/user.controller';
 import { VenueController } from './controllers/venue.controller';
+import { JwtAuthenticationGuard } from './guards/jwt-authentication.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [ApplicationModule],
@@ -24,5 +26,6 @@ import { VenueController } from './controllers/venue.controller';
     SportController,
     EventController,
   ],
+  providers: [JwtAuthenticationGuard, RolesGuard],
 })
 export class PresentationModule {}

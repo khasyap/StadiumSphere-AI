@@ -1,6 +1,6 @@
 import type { Model } from 'mongoose';
 
-import { Email, UniqueEntityId, User } from '../../domain';
+import { Email, UniqueEntityId, User, UserRole } from '../../domain';
 import { DuplicateEntityException } from '../persistence';
 import type { UserPersistence } from '../schemas/user.schema';
 import { UserRepository } from './user.repository';
@@ -41,10 +41,10 @@ describe('UserRepository', () => {
     );
     await expect(repository.delete(new UniqueEntityId('user-1'))).resolves.toBeUndefined();
 
-    expect(model.create).toHaveBeenCalledWith({ email: 'user@example.com' });
+    expect(model.create).toHaveBeenCalledWith({ email: 'user@example.com', role: UserRole.USER });
     expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
       'user-1',
-      { $set: { email: 'user@example.com' } },
+      { $set: { email: 'user@example.com', role: UserRole.USER } },
       { new: true, runValidators: true },
     );
   });

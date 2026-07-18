@@ -1,4 +1,6 @@
 import type { RestApplicationService } from '../../application';
+import { UserRole } from '../../domain';
+import { ROLES_KEY } from '../decorators/roles.decorator';
 import { StadiumController } from './stadium.controller';
 import { CreateStadiumDto, UpdateStadiumDto } from '../dto/stadium.dto';
 
@@ -39,5 +41,19 @@ describe('StadiumController', () => {
     expect(service.create).toHaveBeenCalledWith(create);
     expect(service.update).toHaveBeenCalledWith('stadium-1', update);
     expect(service.delete).toHaveBeenCalledWith('stadium-1');
+  });
+
+  it('declares representative authorization roles without changing controller delegation', () => {
+    expect(Reflect.getMetadata(ROLES_KEY, StadiumController.prototype.list)).toEqual([
+      UserRole.ADMIN,
+      UserRole.MANAGER,
+      UserRole.STAFF,
+      UserRole.USER,
+    ]);
+    expect(Reflect.getMetadata(ROLES_KEY, StadiumController.prototype.create)).toEqual([
+      UserRole.ADMIN,
+      UserRole.MANAGER,
+    ]);
+    expect(Reflect.getMetadata(ROLES_KEY, StadiumController.prototype.delete)).toEqual([UserRole.ADMIN]);
   });
 });

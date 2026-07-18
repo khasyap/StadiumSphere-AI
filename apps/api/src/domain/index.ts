@@ -20,6 +20,7 @@ export * from './sport/sport';
 export * from './stadium/stadium';
 export * from './team/team';
 export * from './user/user';
+export * from './user/user-role';
 export * from './value-object/address';
 export * from './value-object/capacity';
 export * from './value-object/coordinates';

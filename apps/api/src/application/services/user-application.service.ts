@@ -32,6 +32,8 @@ export class UserApplicationService extends CrudApplicationService<
     const user = current.toJSON();
     const properties: UserProps = { email: new Email(command.email ?? user.email.value) };
 
+    properties.role = current.role;
+
     if (current.passwordHash !== undefined) {
       properties.passwordHash = current.passwordHash;
     }

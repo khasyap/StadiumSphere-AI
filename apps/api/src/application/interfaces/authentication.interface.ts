@@ -1,5 +1,8 @@
+import type { UserRole } from '../../domain';
+
 export interface AuthenticationTokenPayload {
   readonly email: string;
+  readonly role: UserRole;
   readonly sub: string;
   readonly tokenType: 'access' | 'refresh';
 }

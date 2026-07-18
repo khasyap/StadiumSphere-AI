@@ -1,11 +1,13 @@
 import { AggregateRoot } from '../aggregate-root/aggregate-root';
 import type { UniqueEntityId } from '../identifier/unique-entity-id';
 import type { Email } from '../value-object/email';
+import { UserRole } from './user-role';
 
 export interface UserProps {
   email: Email;
   passwordHash?: string;
   refreshTokenHash?: string;
+  role?: UserRole;
 }
 
 export class User extends AggregateRoot<UserProps> {
@@ -19,6 +21,10 @@ export class User extends AggregateRoot<UserProps> {
 
   public get refreshTokenHash(): string | undefined {
     return this.props.refreshTokenHash;
+  }
+
+  public get role(): UserRole {
+    return this.props.role ?? UserRole.USER;
   }
 
   public override toJSON(): Readonly<{ email: Email; id: string }> {
