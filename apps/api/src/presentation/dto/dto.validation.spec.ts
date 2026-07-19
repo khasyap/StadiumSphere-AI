@@ -3,7 +3,7 @@ import { validate } from 'class-validator';
 import { CreateStadiumDto } from './stadium.dto';
 import { CreateOrganizationDto } from './organization.dto';
 import { CreateUserDto } from './user.dto';
-import { CreateVenueDto } from './venue.dto';
+import { CreateVenueDto, ReserveVenueDto } from './venue.dto';
 import { CreateBookingDto } from './booking.dto';
 import { CreateEventDto } from './event.dto';
 import { CreateSportDto } from './sport.dto';
@@ -56,14 +56,23 @@ describe('presentation DTO validation', () => {
     await expect(validate(dto)).resolves.toHaveLength(2);
   });
 
+  it('rejects invalid venue reservation dates before application handling', async () => {
+    const dto = Object.assign(new ReserveVenueDto(), {
+      endsAt: new Date('invalid'),
+      startsAt: new Date('2026-07-20T18:00:00.000Z'),
+    });
+
+    await expect(validate(dto)).resolves.toHaveLength(1);
+  });
+
   it('rejects blank Team, Sport, and Booking text fields', async () => {
     const team = Object.assign(new CreateTeamDto(), { name: '', sportId: '', sportName: '' });
     const sport = Object.assign(new CreateSportDto(), { name: '' });
-    const booking = Object.assign(new CreateBookingDto(), { reference: '' });
+    const booking = Object.assign(new CreateBookingDto(), { eventId: '', reference: '' });
 
     await expect(validate(team)).resolves.toHaveLength(3);
     await expect(validate(sport)).resolves.toHaveLength(1);
-    await expect(validate(booking)).resolves.toHaveLength(1);
+    await expect(validate(booking)).resolves.toHaveLength(2);
   });
 
   it('rejects invalid event date input before application handling', async () => {

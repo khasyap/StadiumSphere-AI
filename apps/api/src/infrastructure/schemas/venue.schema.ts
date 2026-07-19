@@ -1,5 +1,7 @@
 import { Schema } from 'mongoose';
 
+import { VenueStatus } from '../../domain';
+
 export interface VenueAddressPersistence {
   city: string;
   country: string;
@@ -14,6 +16,9 @@ export interface VenuePersistence {
     longitude: number;
   };
   name: string;
+  reservationEndsAt?: Date;
+  reservationStartsAt?: Date;
+  status?: VenueStatus;
 }
 
 export const VENUE_PERSISTENCE_MODEL = 'VenuePersistence';
@@ -31,6 +36,9 @@ export const VenuePersistenceSchema = new Schema<VenuePersistence>(
       longitude: { required: true, type: Number },
     },
     name: { required: true, trim: true, type: String },
+    reservationEndsAt: { type: Date },
+    reservationStartsAt: { type: Date },
+    status: { default: VenueStatus.AVAILABLE, enum: Object.values(VenueStatus), required: true, type: String },
   },
   { collection: 'venues', timestamps: true },
 );

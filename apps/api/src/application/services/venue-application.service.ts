@@ -1,6 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { Address, Coordinates, GeoLocation, Venue } from '../../domain';
+import {
+  Address,
+  Coordinates,
+  GeoLocation,
+  TimeSlot,
+  UniqueEntityId,
+  Venue,
+  VenueStatus,
+} from '../../domain';
+import { ApplicationEntityNotFoundException } from '../exceptions/application-entity-not-found.exception';
+import { ApplicationValidationException } from '../exceptions/application-validation.exception';
 import type { VenueRepositoryPort } from '../interfaces/application-repository.interface';
 import { VENUE_REPOSITORY } from '../interfaces/application-repository.interface';
 import { CrudApplicationService } from './crud-application.service';
@@ -34,27 +44,87 @@ export class VenueApplicationService extends CrudApplicationService<
     super(repository);
   }
 
+  public async reserve(id: string, startsAt: Date, endsAt: Date): Promise<Record<string, unknown>> {
+    const venue = await this.getVenue(id);
+
+    if (venue.status === VenueStatus.CLOSED || venue.status === VenueStatus.MAINTENANCE) {
+      throw new ApplicationValidationException(`Venue cannot be reserved while ${venue.status}.`);
+    }
+
+    if (venue.status === VenueStatus.RESERVED) {
+      throw new ApplicationValidationException('Venue already has an active reservation.');
+    }
+
+    return this.persist(venue, VenueStatus.RESERVED, new TimeSlot(startsAt, endsAt));
+  }
+
+  public async release(id: string): Promise<Record<string, unknown>> {
+    const venue = await this.getVenue(id);
+
+    if (venue.status !== VenueStatus.RESERVED) {
+      throw new ApplicationValidationException(`Venue cannot be released from ${venue.status}.`);
+    }
+
+    return this.persist(venue, VenueStatus.AVAILABLE);
+  }
+
+  public async maintenance(id: string): Promise<Record<string, unknown>> {
+    const venue = await this.getVenue(id);
+
+    if (venue.status !== VenueStatus.AVAILABLE) {
+      throw new ApplicationValidationException(`Venue cannot be placed into maintenance from ${venue.status}.`);
+    }
+
+    return this.persist(venue, VenueStatus.MAINTENANCE);
+  }
+
+  public async open(id: string): Promise<Record<string, unknown>> {
+    const venue = await this.getVenue(id);
+
+    if (venue.status !== VenueStatus.MAINTENANCE && venue.status !== VenueStatus.CLOSED) {
+      throw new ApplicationValidationException(`Venue cannot be opened from ${venue.status}.`);
+    }
+
+    return this.persist(venue, VenueStatus.AVAILABLE);
+  }
+
+  public async close(id: string): Promise<Record<string, unknown>> {
+    const venue = await this.getVenue(id);
+
+    if (venue.status !== VenueStatus.AVAILABLE && venue.status !== VenueStatus.MAINTENANCE) {
+      throw new ApplicationValidationException(`Venue cannot be closed from ${venue.status}.`);
+    }
+
+    return this.persist(venue, VenueStatus.CLOSED);
+  }
+
   protected createEntity(command: VenueCreateCommand): Venue {
-    return new Venue({ location: this.createLocation(command), name: command.name });
+    return new Venue({
+      location: this.createLocation(command),
+      name: command.name,
+      status: VenueStatus.AVAILABLE,
+    });
   }
 
   protected updateEntity(current: Venue, command: VenueUpdateCommand): Venue {
     const venue = current.toJSON();
     const coordinates = venue.location.coordinates;
 
-    return new Venue(
-      {
-        location: new GeoLocation(
-          new Coordinates(
-            command.latitude ?? coordinates.latitude,
-            command.longitude ?? coordinates.longitude,
-          ),
-          venue.location.address,
+    const props = {
+      location: new GeoLocation(
+        new Coordinates(
+          command.latitude ?? coordinates.latitude,
+          command.longitude ?? coordinates.longitude,
         ),
-        name: command.name ?? venue.name,
-      },
-      current.id,
-    );
+        venue.location.address,
+      ),
+      name: command.name ?? venue.name,
+      status: current.status,
+    };
+
+    return venue.reservationTimeSlot === undefined
+      ? new Venue(props, current.id)
+      : new Venue({ ...props, reservationTimeSlot: venue.reservationTimeSlot }, current.id);
   }
 
   private createLocation(command: VenueCreateCommand): GeoLocation {
@@ -84,5 +154,36 @@ export class VenueApplicationService extends CrudApplicationService<
       country: country ?? '',
       postalCode: postalCode ?? '',
     });
+  }
+
+  private async getVenue(id: string): Promise<Venue> {
+    const venue = await this.repository.findById(new UniqueEntityId(id));
+
+    if (venue === null) {
+      throw new ApplicationEntityNotFoundException(id);
+    }
+
+    return venue;
+  }
+
+  private async persist(
+    venue: Venue,
+    status: VenueStatus,
+    reservationTimeSlot?: TimeSlot,
+  ): Promise<Record<string, unknown>> {
+    const current = venue.toJSON();
+    const props = {
+      location: current.location,
+      name: current.name,
+      status,
+    };
+    const updated = await this.repository.update(
+      venue.id,
+      reservationTimeSlot === undefined
+        ? new Venue(props, venue.id)
+        : new Venue({ ...props, reservationTimeSlot }, venue.id),
+    );
+
+    return updated.toJSON() as Record<string, unknown>;
   }
 }

@@ -1,4 +1,4 @@
-import { Address, Coordinates, GeoLocation, UniqueEntityId, Venue } from '../../domain';
+import { Address, Coordinates, GeoLocation, UniqueEntityId, Venue, VenueStatus } from '../../domain';
 import { VenuePersistenceMapper } from './venue.persistence-mapper';
 
 describe('VenuePersistenceMapper', () => {
@@ -16,7 +16,11 @@ describe('VenuePersistenceMapper', () => {
     });
 
     expect(venue).toBeInstanceOf(Venue);
-    expect(venue.toJSON()).toMatchObject({ id: 'venue-1', name: 'StadiumSphere Arena' });
+    expect(venue.toJSON()).toMatchObject({
+      id: 'venue-1',
+      name: 'StadiumSphere Arena',
+      status: VenueStatus.AVAILABLE,
+    });
   });
 
   it('maps a domain entity into persistence fields without DTO concerns', () => {
@@ -38,6 +42,7 @@ describe('VenuePersistenceMapper', () => {
         longitude: 80.2707,
       },
       name: 'StadiumSphere Arena',
+      status: VenueStatus.AVAILABLE,
     });
   });
 });

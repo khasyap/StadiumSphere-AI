@@ -1,6 +1,6 @@
 import type { Model } from 'mongoose';
 
-import { Event, TimeSlot, UniqueEntityId } from '../../domain';
+import { Event, EventStatus, TimeSlot, UniqueEntityId } from '../../domain';
 import { DuplicateEntityException } from '../persistence';
 import type { EventPersistence } from '../schemas/event.schema';
 import { EventRepository } from './event.repository';
@@ -44,7 +44,12 @@ describe('EventRepository', () => {
     await expect(repository.update(new UniqueEntityId('event-1'), event)).resolves.toBeInstanceOf(Event);
     await expect(repository.delete(new UniqueEntityId('event-1'))).resolves.toBeUndefined();
 
-    expect(model.create).toHaveBeenCalledWith({ endsAt, name: 'Championship Final', startsAt });
+    expect(model.create).toHaveBeenCalledWith({
+      endsAt,
+      name: 'Championship Final',
+      startsAt,
+      status: EventStatus.SCHEDULED,
+    });
   });
 
   it('translates a duplicate MongoDB key error through the shared persistence layer', async () => {

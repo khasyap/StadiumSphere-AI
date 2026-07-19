@@ -1,9 +1,20 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post, Put } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Inject, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
-import { EVENT_APPLICATION_SERVICE } from '../../application';
+import { EVENT_APPLICATION_SERVICE, EventApplicationService } from '../../application';
 import type { RestApplicationService } from '../../application';
+import { UserRole } from '../../domain';
+import { Roles } from '../decorators/roles.decorator';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
+import { JwtAuthenticationGuard } from '../guards/jwt-authentication.guard';
+import { RolesGuard } from '../guards/roles.guard';
 import { SuccessResponse } from '../responses/success.response';
 import { ResourceController } from './resource.controller';
 
@@ -12,9 +23,9 @@ import { ResourceController } from './resource.controller';
 export class EventController extends ResourceController<CreateEventDto, UpdateEventDto, unknown> {
   public constructor(
     @Inject(EVENT_APPLICATION_SERVICE)
-    service: RestApplicationService<CreateEventDto, UpdateEventDto, unknown>,
+    private readonly workflowService: EventWorkflowService,
   ) {
-    super(service, 'Event');
+    super(workflowService, 'Event');
   }
 
   @Get()
@@ -54,4 +65,43 @@ export class EventController extends ResourceController<CreateEventDto, UpdateEv
   public delete(@Param('id') id: string): Promise<SuccessResponse<undefined>> {
     return this.deleteResource(id);
   }
+
+  @Post(':id/start')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Start an event (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Event started.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async start(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse('Event started.', await this.workflowService.start(id));
+  }
+
+  @Post(':id/finish')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Finish an event (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Event finished.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async finish(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse('Event finished.', await this.workflowService.finish(id));
+  }
+
+  @Post(':id/cancel')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cancel an event (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Event cancelled.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async cancel(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse('Event cancelled.', await this.workflowService.cancel(id));
+  }
 }
+
+type EventWorkflowService = RestApplicationService<CreateEventDto, UpdateEventDto, unknown> &
+  Pick<EventApplicationService, 'cancel' | 'finish' | 'start'>;

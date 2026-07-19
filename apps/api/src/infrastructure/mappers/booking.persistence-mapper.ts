@@ -1,13 +1,21 @@
-import { Booking, UniqueEntityId } from '../../domain';
+import { Booking, BookingStatus, UniqueEntityId } from '../../domain';
 import type { BookingPersistence } from '../schemas/booking.schema';
 import type { PersistenceMapper, PersistenceRecord } from './persistence-mapper.interface';
 
 export class BookingPersistenceMapper implements PersistenceMapper<Booking, BookingPersistence> {
   public toDomain(document: PersistenceRecord<BookingPersistence>): Booking {
-    return new Booking({ reference: document.reference }, new UniqueEntityId(document.id));
+    return new Booking(
+      {
+        eventId: document.eventId,
+        reference: document.reference,
+        status: document.status ?? BookingStatus.PENDING,
+      },
+      new UniqueEntityId(document.id),
+    );
   }
 
   public toPersistence(entity: Booking): Partial<BookingPersistence> {
-    return { reference: entity.toJSON().reference };
+    const booking = entity.toJSON();
+    return { eventId: booking.eventId, reference: booking.reference, status: entity.status };
   }
 }

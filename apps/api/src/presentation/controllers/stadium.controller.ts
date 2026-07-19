@@ -8,7 +8,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-import { STADIUM_APPLICATION_SERVICE } from '../../application';
+import { STADIUM_APPLICATION_SERVICE, StadiumApplicationService } from '../../application';
 import type { RestApplicationService } from '../../application';
 import { UserRole } from '../../domain';
 import { Roles } from '../decorators/roles.decorator';
@@ -27,9 +27,9 @@ export class StadiumController extends ResourceController<
 > {
   public constructor(
     @Inject(STADIUM_APPLICATION_SERVICE)
-    service: RestApplicationService<CreateStadiumDto, UpdateStadiumDto, unknown>,
+    private readonly workflowService: StadiumWorkflowService,
   ) {
-    super(service, 'Stadium');
+    super(workflowService, 'Stadium');
   }
 
   @Get()
@@ -83,4 +83,46 @@ export class StadiumController extends ResourceController<
   public delete(@Param('id') id: string): Promise<SuccessResponse<undefined>> {
     return this.deleteResource(id);
   }
+
+  @Post(':id/open')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Open a stadium (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Stadium opened.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async open(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse('Stadium opened.', await this.workflowService.open(id));
+  }
+
+  @Post(':id/close')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Close a stadium (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Stadium closed.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async close(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse('Stadium closed.', await this.workflowService.close(id));
+  }
+
+  @Post(':id/maintenance')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Place a stadium into maintenance (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Stadium placed into maintenance.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async maintenance(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse(
+      'Stadium placed into maintenance.',
+      await this.workflowService.maintenance(id),
+    );
+  }
 }
+
+type StadiumWorkflowService = RestApplicationService<CreateStadiumDto, UpdateStadiumDto, unknown> &
+  Pick<StadiumApplicationService, 'close' | 'maintenance' | 'open'>;

@@ -1,9 +1,20 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post, Put } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Inject, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
-import { VENUE_APPLICATION_SERVICE } from '../../application';
+import { VENUE_APPLICATION_SERVICE, VenueApplicationService } from '../../application';
 import type { RestApplicationService } from '../../application';
-import { CreateVenueDto, UpdateVenueDto } from '../dto/venue.dto';
+import { UserRole } from '../../domain';
+import { Roles } from '../decorators/roles.decorator';
+import { CreateVenueDto, ReserveVenueDto, UpdateVenueDto } from '../dto/venue.dto';
+import { JwtAuthenticationGuard } from '../guards/jwt-authentication.guard';
+import { RolesGuard } from '../guards/roles.guard';
 import { SuccessResponse } from '../responses/success.response';
 import { ResourceController } from './resource.controller';
 
@@ -12,9 +23,9 @@ import { ResourceController } from './resource.controller';
 export class VenueController extends ResourceController<CreateVenueDto, UpdateVenueDto, unknown> {
   public constructor(
     @Inject(VENUE_APPLICATION_SERVICE)
-    service: RestApplicationService<CreateVenueDto, UpdateVenueDto, unknown>,
+    private readonly workflowService: VenueWorkflowService,
   ) {
-    super(service, 'Venue');
+    super(workflowService, 'Venue');
   }
 
   @Get()
@@ -54,4 +65,76 @@ export class VenueController extends ResourceController<CreateVenueDto, UpdateVe
   public delete(@Param('id') id: string): Promise<SuccessResponse<undefined>> {
     return this.deleteResource(id);
   }
+
+  @Post(':id/reserve')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Reserve a venue (Staff, Manager, or Admin)' })
+  @ApiResponse({ status: 200, description: 'Venue reserved.' })
+  @ApiForbiddenResponse({ description: 'Staff, Manager, or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async reserve(
+    @Param('id') id: string,
+    @Body() dto: ReserveVenueDto,
+  ): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse(
+      'Venue reserved.',
+      await this.workflowService.reserve(id, dto.startsAt, dto.endsAt),
+    );
+  }
+
+  @Post(':id/release')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Release a venue reservation (Staff, Manager, or Admin)' })
+  @ApiResponse({ status: 200, description: 'Venue released.' })
+  @ApiForbiddenResponse({ description: 'Staff, Manager, or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async release(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse('Venue released.', await this.workflowService.release(id));
+  }
+
+  @Post(':id/maintenance')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Place a venue into maintenance (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Venue placed into maintenance.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async maintenance(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse(
+      'Venue placed into maintenance.',
+      await this.workflowService.maintenance(id),
+    );
+  }
+
+  @Post(':id/open')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Open a venue (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Venue opened.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async open(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse('Venue opened.', await this.workflowService.open(id));
+  }
+
+  @Post(':id/close')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Close a venue (Manager or Admin)' })
+  @ApiResponse({ status: 200, description: 'Venue closed.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
+  public async close(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
+    return new SuccessResponse('Venue closed.', await this.workflowService.close(id));
+  }
 }
+
+type VenueWorkflowService = RestApplicationService<CreateVenueDto, UpdateVenueDto, unknown> &
+  Pick<VenueApplicationService, 'close' | 'maintenance' | 'open' | 'release' | 'reserve'>;

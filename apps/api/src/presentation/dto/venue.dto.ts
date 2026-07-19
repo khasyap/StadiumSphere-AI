@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateVenueDto {
   @ApiProperty({ example: 13.0827 })
@@ -69,4 +69,16 @@ export class UpdateVenueDto {
   @IsOptional()
   @IsString()
   public name?: string;
+}
+
+export class ReserveVenueDto {
+  @ApiProperty({ example: '2026-07-20T20:00:00.000Z', format: 'date-time' })
+  @IsDate()
+  @Type(() => Date)
+  public endsAt!: Date;
+
+  @ApiProperty({ example: '2026-07-20T18:00:00.000Z', format: 'date-time' })
+  @IsDate()
+  @Type(() => Date)
+  public startsAt!: Date;
 }

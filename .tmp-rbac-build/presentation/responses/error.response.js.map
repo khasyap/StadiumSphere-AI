@@ -1,0 +1,1 @@
+{"version":3,"file":"error.response.js","sourceRoot":"","sources":["../../../apps/api/src/presentation/responses/error.response.ts"],"names":[],"mappings":";;;AAAA,MAAa,aAAa;IAEN;IACA;IACA;IACA;IAJlB,YACkB,aAAqB,EACrB,OAAe,EACf,UAAkB,EAClB,SAAiB;QAHjB,kBAAa,GAAb,aAAa,CAAQ;QACrB,YAAO,GAAP,OAAO,CAAQ;QACf,eAAU,GAAV,UAAU,CAAQ;QAClB,cAAS,GAAT,SAAS,CAAQ;IAChC,CAAC;CACL;AAPD,sCAOC"}

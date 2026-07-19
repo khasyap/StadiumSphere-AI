@@ -1,6 +1,6 @@
 import type { Model } from 'mongoose';
 
-import { Address, Coordinates, GeoLocation, UniqueEntityId, Venue } from '../../domain';
+import { Address, Coordinates, GeoLocation, UniqueEntityId, Venue, VenueStatus } from '../../domain';
 import { DuplicateEntityException } from '../persistence';
 import type { VenuePersistence } from '../schemas/venue.schema';
 import { VenueRepository } from './venue.repository';
@@ -63,6 +63,7 @@ describe('VenueRepository', () => {
         longitude: 80.2707,
       },
       name: 'StadiumSphere Arena',
+      status: VenueStatus.AVAILABLE,
     });
     expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
       'venue-1',
@@ -74,6 +75,7 @@ describe('VenueRepository', () => {
             longitude: 80.2707,
           },
           name: 'StadiumSphere Arena',
+          status: VenueStatus.AVAILABLE,
         },
       },
       { new: true, runValidators: true },

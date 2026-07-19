@@ -1,15 +1,22 @@
 import type { RestApplicationService } from '../../application';
+import type { StadiumApplicationService } from '../../application';
 import { UserRole } from '../../domain';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { StadiumController } from './stadium.controller';
 import { CreateStadiumDto, UpdateStadiumDto } from '../dto/stadium.dto';
 
 describe('StadiumController', () => {
-  const service: jest.Mocked<RestApplicationService<CreateStadiumDto, UpdateStadiumDto, unknown>> = {
+  type StadiumWorkflowService = RestApplicationService<CreateStadiumDto, UpdateStadiumDto, unknown> &
+    Pick<StadiumApplicationService, 'close' | 'maintenance' | 'open'>;
+
+  const service: jest.Mocked<StadiumWorkflowService> = {
+    close: jest.fn(async (_id: string) => ({ id: 'stadium-1' })),
     create: jest.fn(async (_command: CreateStadiumDto) => ({ id: 'stadium-1' })),
     delete: jest.fn(async (_id: string) => undefined),
     findAll: jest.fn(async () => [{ id: 'stadium-1' }]),
     findById: jest.fn(async (_id: string) => ({ id: 'stadium-1' })),
+    maintenance: jest.fn(async (_id: string) => ({ id: 'stadium-1' })),
+    open: jest.fn(async (_id: string) => ({ id: 'stadium-1' })),
     update: jest.fn(async (_id: string, _command: UpdateStadiumDto) => ({ id: 'stadium-1' })),
   };
   const controller = new StadiumController(service);
@@ -55,5 +62,15 @@ describe('StadiumController', () => {
       UserRole.MANAGER,
     ]);
     expect(Reflect.getMetadata(ROLES_KEY, StadiumController.prototype.delete)).toEqual([UserRole.ADMIN]);
+  });
+
+  it('delegates operational workflows to the application service', async () => {
+    await controller.open('stadium-1');
+    await controller.close('stadium-1');
+    await controller.maintenance('stadium-1');
+
+    expect(service.open).toHaveBeenCalledWith('stadium-1');
+    expect(service.close).toHaveBeenCalledWith('stadium-1');
+    expect(service.maintenance).toHaveBeenCalledWith('stadium-1');
   });
 });

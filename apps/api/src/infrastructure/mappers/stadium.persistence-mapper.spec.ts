@@ -1,4 +1,4 @@
-import { Capacity, Stadium, UniqueEntityId } from '../../domain';
+import { Capacity, Stadium, StadiumStatus, UniqueEntityId } from '../../domain';
 import { StadiumPersistenceMapper } from './stadium.persistence-mapper';
 
 describe('StadiumPersistenceMapper', () => {
@@ -8,7 +8,11 @@ describe('StadiumPersistenceMapper', () => {
     const stadium = mapper.toDomain({ id: 'stadium-1', capacity: 50000, name: 'StadiumSphere Arena' });
 
     expect(stadium).toBeInstanceOf(Stadium);
-    expect(stadium.toJSON()).toMatchObject({ id: 'stadium-1', name: 'StadiumSphere Arena' });
+    expect(stadium.toJSON()).toMatchObject({
+      id: 'stadium-1',
+      name: 'StadiumSphere Arena',
+      status: StadiumStatus.AVAILABLE,
+    });
   });
 
   it('maps a domain entity into persistence fields without DTO concerns', () => {
@@ -17,6 +21,10 @@ describe('StadiumPersistenceMapper', () => {
       new UniqueEntityId('stadium-1'),
     );
 
-    expect(mapper.toPersistence(stadium)).toEqual({ capacity: 50000, name: 'StadiumSphere Arena' });
+    expect(mapper.toPersistence(stadium)).toEqual({
+      capacity: 50000,
+      name: 'StadiumSphere Arena',
+      status: StadiumStatus.AVAILABLE,
+    });
   });
 });

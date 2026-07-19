@@ -1,13 +1,22 @@
 import type { RestApplicationService } from '../../application';
-import { CreateVenueDto, UpdateVenueDto } from '../dto/venue.dto';
+import type { VenueApplicationService } from '../../application';
+import { CreateVenueDto, ReserveVenueDto, UpdateVenueDto } from '../dto/venue.dto';
 import { VenueController } from './venue.controller';
 
 describe('VenueController', () => {
-  const service: jest.Mocked<RestApplicationService<CreateVenueDto, UpdateVenueDto, unknown>> = {
+  type VenueWorkflowService = RestApplicationService<CreateVenueDto, UpdateVenueDto, unknown> &
+    Pick<VenueApplicationService, 'close' | 'maintenance' | 'open' | 'release' | 'reserve'>;
+
+  const service: jest.Mocked<VenueWorkflowService> = {
+    close: jest.fn(async (_id: string) => ({ id: 'venue-1' })),
     create: jest.fn(async (_command: CreateVenueDto) => ({ id: 'venue-1' })),
     delete: jest.fn(async (_id: string) => undefined),
     findAll: jest.fn(async () => [{ id: 'venue-1' }]),
     findById: jest.fn(async (_id: string) => ({ id: 'venue-1' })),
+    maintenance: jest.fn(async (_id: string) => ({ id: 'venue-1' })),
+    open: jest.fn(async (_id: string) => ({ id: 'venue-1' })),
+    release: jest.fn(async (_id: string) => ({ id: 'venue-1' })),
+    reserve: jest.fn(async (_id: string, _startsAt: Date, _endsAt: Date) => ({ id: 'venue-1' })),
     update: jest.fn(async (_id: string, _command: UpdateVenueDto) => ({ id: 'venue-1' })),
   };
   const controller = new VenueController(service);
@@ -43,5 +52,24 @@ describe('VenueController', () => {
     expect(service.create).toHaveBeenCalledWith(create);
     expect(service.update).toHaveBeenCalledWith('venue-1', update);
     expect(service.delete).toHaveBeenCalledWith('venue-1');
+  });
+
+  it('delegates operational workflows to the application service', async () => {
+    const reservation = Object.assign(new ReserveVenueDto(), {
+      endsAt: new Date('2026-07-20T20:00:00.000Z'),
+      startsAt: new Date('2026-07-20T18:00:00.000Z'),
+    });
+
+    await controller.reserve('venue-1', reservation);
+    await controller.release('venue-1');
+    await controller.maintenance('venue-1');
+    await controller.open('venue-1');
+    await controller.close('venue-1');
+
+    expect(service.reserve).toHaveBeenCalledWith('venue-1', reservation.startsAt, reservation.endsAt);
+    expect(service.release).toHaveBeenCalledWith('venue-1');
+    expect(service.maintenance).toHaveBeenCalledWith('venue-1');
+    expect(service.open).toHaveBeenCalledWith('venue-1');
+    expect(service.close).toHaveBeenCalledWith('venue-1');
   });
 });

@@ -1,0 +1,6 @@
+export enum VenueStatus {
+  AVAILABLE = 'AVAILABLE',
+  RESERVED = 'RESERVED',
+  MAINTENANCE = 'MAINTENANCE',
+  CLOSED = 'CLOSED',
+}

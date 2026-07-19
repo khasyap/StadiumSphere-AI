@@ -1,4 +1,4 @@
-import { Event, TimeSlot, UniqueEntityId } from '../../domain';
+import { Event, EventStatus, TimeSlot, UniqueEntityId } from '../../domain';
 import { EventPersistenceMapper } from './event.persistence-mapper';
 
 describe('EventPersistenceMapper', () => {
@@ -19,6 +19,11 @@ describe('EventPersistenceMapper', () => {
       new UniqueEntityId('event-1'),
     );
 
-    expect(mapper.toPersistence(event)).toEqual({ endsAt, name: 'Championship Final', startsAt });
+    expect(mapper.toPersistence(event)).toEqual({
+      endsAt,
+      name: 'Championship Final',
+      startsAt,
+      status: EventStatus.SCHEDULED,
+    });
   });
 });

@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { Capacity, Stadium } from '../../domain';
+import { Capacity, Stadium, StadiumStatus, UniqueEntityId } from '../../domain';
+import { ApplicationEntityNotFoundException } from '../exceptions/application-entity-not-found.exception';
+import { ApplicationValidationException } from '../exceptions/application-validation.exception';
 import type { StadiumRepositoryPort } from '../interfaces/application-repository.interface';
 import { STADIUM_REPOSITORY } from '../interfaces/application-repository.interface';
 import { CrudApplicationService } from './crud-application.service';
@@ -25,8 +27,36 @@ export class StadiumApplicationService extends CrudApplicationService<
     super(repository);
   }
 
+  public async open(id: string): Promise<Record<string, unknown>> {
+    const stadium = await this.getStadium(id);
+
+    if (stadium.status !== StadiumStatus.CLOSED && stadium.status !== StadiumStatus.MAINTENANCE) {
+      throw new ApplicationValidationException(`Stadium cannot open from ${stadium.status}.`);
+    }
+
+    return this.persistStatus(stadium, StadiumStatus.AVAILABLE);
+  }
+
+  public async close(id: string): Promise<Record<string, unknown>> {
+    const stadium = await this.getStadium(id);
+
+    if (stadium.status === StadiumStatus.CLOSED) {
+      throw new ApplicationValidationException('Stadium is already closed.');
+    }
+
+    return this.persistStatus(stadium, StadiumStatus.CLOSED);
+  }
+
+  public async maintenance(id: string): Promise<Record<string, unknown>> {
+    return this.transition(id, StadiumStatus.MAINTENANCE, 'place into maintenance');
+  }
+
   protected createEntity(command: StadiumCreateCommand): Stadium {
-    return new Stadium({ capacity: new Capacity(command.capacity), name: command.name });
+    return new Stadium({
+      capacity: new Capacity(command.capacity),
+      name: command.name,
+      status: StadiumStatus.AVAILABLE,
+    });
   }
 
   protected updateEntity(current: Stadium, command: StadiumUpdateCommand): Stadium {
@@ -35,8 +65,46 @@ export class StadiumApplicationService extends CrudApplicationService<
       {
         capacity: new Capacity(command.capacity ?? stadium.capacity.value),
         name: command.name ?? stadium.name,
+        status: current.status,
       },
       current.id,
     );
+  }
+
+  private async getStadium(id: string): Promise<Stadium> {
+    const stadium = await this.repository.findById(new UniqueEntityId(id));
+
+    if (stadium === null) {
+      throw new ApplicationEntityNotFoundException(id);
+    }
+
+    return stadium;
+  }
+
+  private async transition(
+    id: string,
+    next: StadiumStatus,
+    action: string,
+  ): Promise<Record<string, unknown>> {
+    const stadium = await this.getStadium(id);
+
+    if (stadium.status !== StadiumStatus.AVAILABLE) {
+      throw new ApplicationValidationException(`Stadium cannot ${action} from ${stadium.status}.`);
+    }
+
+    return this.persistStatus(stadium, next);
+  }
+
+  private async persistStatus(
+    stadium: Stadium,
+    status: StadiumStatus,
+  ): Promise<Record<string, unknown>> {
+    const current = stadium.toJSON();
+    const updated = await this.repository.update(
+      stadium.id,
+      new Stadium({ capacity: current.capacity, name: current.name, status }, stadium.id),
+    );
+
+    return updated.toJSON() as Record<string, unknown>;
   }
 }

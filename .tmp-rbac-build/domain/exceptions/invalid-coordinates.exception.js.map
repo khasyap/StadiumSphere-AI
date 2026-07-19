@@ -1,0 +1,1 @@
+{"version":3,"file":"invalid-coordinates.exception.js","sourceRoot":"","sources":["../../../apps/api/src/domain/exceptions/invalid-coordinates.exception.ts"],"names":[],"mappings":";;;AAAA,+EAA0E;AAE1E,MAAa,2BAA4B,SAAQ,uDAAyB;IACxE;QACE,KAAK,CAAC,+DAA+D,CAAC,CAAC;IACzE,CAAC;CACF;AAJD,kEAIC"}

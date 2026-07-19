@@ -1,0 +1,1 @@
+{"version":3,"file":"invalid-time-slot.exception.js","sourceRoot":"","sources":["../../../apps/api/src/domain/exceptions/invalid-time-slot.exception.ts"],"names":[],"mappings":";;;AAAA,+EAA0E;AAE1E,MAAa,wBAAyB,SAAQ,uDAAyB;IACrE;QACE,KAAK,CAAC,wCAAwC,CAAC,CAAC;IAClD,CAAC;CACF;AAJD,4DAIC"}

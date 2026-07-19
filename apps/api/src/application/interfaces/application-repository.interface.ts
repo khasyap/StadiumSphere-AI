@@ -2,6 +2,7 @@ import type {
   Booking,
   Email,
   Event,
+  TimeSlot,
   Organization,
   Sport,
   Stadium,
@@ -30,7 +31,9 @@ export interface TeamRepositoryPort extends ApplicationRepository<Team> {
 export type OrganizationRepositoryPort = ApplicationRepository<Organization>;
 export type BookingRepositoryPort = ApplicationRepository<Booking>;
 export type SportRepositoryPort = ApplicationRepository<Sport>;
-export type EventRepositoryPort = ApplicationRepository<Event>;
+export interface EventRepositoryPort extends ApplicationRepository<Event> {
+  existsByTimeSlot(timeSlot: TimeSlot): Promise<boolean>;
+}
 
 export const USER_REPOSITORY = Symbol('Application.UserRepository');
 export const STADIUM_REPOSITORY = Symbol('Application.StadiumRepository');

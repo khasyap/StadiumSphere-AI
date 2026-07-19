@@ -1,6 +1,6 @@
 import type { Model } from 'mongoose';
 
-import { Capacity, Stadium, UniqueEntityId } from '../../domain';
+import { Capacity, Stadium, StadiumStatus, UniqueEntityId } from '../../domain';
 import { DuplicateEntityException } from '../persistence';
 import type { StadiumPersistence } from '../schemas/stadium.schema';
 import { StadiumRepository } from './stadium.repository';
@@ -42,10 +42,14 @@ describe('StadiumRepository', () => {
     await expect(repository.update(new UniqueEntityId('stadium-1'), stadium)).resolves.toBeInstanceOf(Stadium);
     await expect(repository.delete(new UniqueEntityId('stadium-1'))).resolves.toBeUndefined();
 
-    expect(model.create).toHaveBeenCalledWith({ capacity: 50000, name: 'StadiumSphere Arena' });
+    expect(model.create).toHaveBeenCalledWith({
+      capacity: 50000,
+      name: 'StadiumSphere Arena',
+      status: StadiumStatus.AVAILABLE,
+    });
     expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
       'stadium-1',
-      { $set: { capacity: 50000, name: 'StadiumSphere Arena' } },
+      { $set: { capacity: 50000, name: 'StadiumSphere Arena', status: StadiumStatus.AVAILABLE } },
       { new: true, runValidators: true },
     );
   });

@@ -1,4 +1,13 @@
-import { Address, Coordinates, GeoLocation, UniqueEntityId, Venue } from '../../domain';
+import {
+  Address,
+  Coordinates,
+  GeoLocation,
+  TimeSlot,
+  UniqueEntityId,
+  Venue,
+  VenueStatus,
+} from '../../domain';
+import { ApplicationValidationException } from '../exceptions/application-validation.exception';
 import type { VenueRepositoryPort } from '../interfaces/application-repository.interface';
 import { VenueApplicationService } from './venue-application.service';
 
@@ -48,5 +57,65 @@ describe('VenueApplicationService', () => {
     expect(repository.create).toHaveBeenCalledTimes(1);
     expect(repository.update).toHaveBeenCalledTimes(1);
     expect(repository.delete).toHaveBeenCalledWith(new UniqueEntityId('venue-1'));
+  });
+
+  it('reserves and releases an available venue through the repository port', async () => {
+    repository.findById
+      .mockResolvedValueOnce(venue)
+      .mockResolvedValueOnce(
+        new Venue(
+          {
+            location: venue.toJSON().location,
+            name: 'StadiumSphere Arena',
+            reservationTimeSlot: new TimeSlot(
+              new Date('2026-07-20T18:00:00.000Z'),
+              new Date('2026-07-20T20:00:00.000Z'),
+            ),
+            status: VenueStatus.RESERVED,
+          },
+          new UniqueEntityId('venue-1'),
+        ),
+      );
+
+    await expect(
+      service.reserve('venue-1', new Date('2026-07-20T18:00:00.000Z'), new Date('2026-07-20T20:00:00.000Z')),
+    ).resolves.toMatchObject({ status: VenueStatus.RESERVED });
+    await expect(service.release('venue-1')).resolves.toMatchObject({ status: VenueStatus.AVAILABLE });
+
+    expect(repository.update).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects a reservation against a closed venue', async () => {
+    repository.findById.mockResolvedValueOnce(
+      new Venue(
+        {
+          location: venue.toJSON().location,
+          name: 'StadiumSphere Arena',
+          status: VenueStatus.CLOSED,
+        },
+        new UniqueEntityId('venue-1'),
+      ),
+    );
+
+    await expect(
+      service.reserve('venue-1', new Date('2026-07-20T18:00:00.000Z'), new Date('2026-07-20T20:00:00.000Z')),
+    ).rejects.toBeInstanceOf(ApplicationValidationException);
+  });
+
+  it('rejects a duplicate active reservation', async () => {
+    repository.findById.mockResolvedValueOnce(
+      new Venue(
+        {
+          location: venue.toJSON().location,
+          name: 'StadiumSphere Arena',
+          status: VenueStatus.RESERVED,
+        },
+        new UniqueEntityId('venue-1'),
+      ),
+    );
+
+    await expect(
+      service.reserve('venue-1', new Date('2026-07-20T18:00:00.000Z'), new Date('2026-07-20T20:00:00.000Z')),
+    ).rejects.toBeInstanceOf(ApplicationValidationException);
   });
 });

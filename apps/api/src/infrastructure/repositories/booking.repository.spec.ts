@@ -1,12 +1,15 @@
 import type { Model } from 'mongoose';
 
-import { Booking, UniqueEntityId } from '../../domain';
+import { Booking, BookingStatus, UniqueEntityId } from '../../domain';
 import { DuplicateEntityException } from '../persistence';
 import type { BookingPersistence } from '../schemas/booking.schema';
 import { BookingRepository } from './booking.repository';
 
-const booking = new Booking({ reference: 'BOOK-2026-0001' }, new UniqueEntityId('booking-1'));
-const document = { id: 'booking-1', reference: 'BOOK-2026-0001' };
+const booking = new Booking(
+  { eventId: 'event-1', reference: 'BOOK-2026-0001', status: BookingStatus.PENDING },
+  new UniqueEntityId('booking-1'),
+);
+const document = { eventId: 'event-1', id: 'booking-1', reference: 'BOOK-2026-0001' };
 
 const createModel = (): Model<BookingPersistence> => {
   const collectionQuery = {
@@ -29,7 +32,7 @@ const createModel = (): Model<BookingPersistence> => {
 };
 
 describe('BookingRepository', () => {
-  it('uses BaseRepository operations for placeholder CRUD and maps results to domain entities', async () => {
+  it('uses BaseRepository operations for CRUD and maps results to domain entities', async () => {
     const model = createModel();
     const repository = new BookingRepository(model);
 
@@ -39,7 +42,11 @@ describe('BookingRepository', () => {
     await expect(repository.update(new UniqueEntityId('booking-1'), booking)).resolves.toBeInstanceOf(Booking);
     await expect(repository.delete(new UniqueEntityId('booking-1'))).resolves.toBeUndefined();
 
-    expect(model.create).toHaveBeenCalledWith({ reference: 'BOOK-2026-0001' });
+    expect(model.create).toHaveBeenCalledWith({
+      eventId: 'event-1',
+      reference: 'BOOK-2026-0001',
+      status: BookingStatus.PENDING,
+    });
   });
 
   it('translates a duplicate MongoDB key error through the shared persistence layer', async () => {
