@@ -2,6 +2,8 @@ import { Capacity, Stadium, StadiumStatus, UniqueEntityId } from '../../domain';
 import { ApplicationValidationException } from '../exceptions/application-validation.exception';
 import type { StadiumRepositoryPort } from '../interfaces/application-repository.interface';
 import { StadiumApplicationService } from './stadium-application.service';
+import { AuditLogService } from '../platform/audit-log.service';
+import { DomainEventDispatcherService } from '../platform/domain-event-dispatcher.service';
 
 describe('StadiumApplicationService', () => {
   const stadium = new Stadium(
@@ -15,7 +17,10 @@ describe('StadiumApplicationService', () => {
     findById: jest.fn(async (_id: UniqueEntityId) => stadium),
     update: jest.fn(async (_id: UniqueEntityId, entity: Stadium) => entity),
   };
-  const service = new StadiumApplicationService(repository);
+  const service = new StadiumApplicationService(
+    repository,
+    new DomainEventDispatcherService(new AuditLogService()),
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

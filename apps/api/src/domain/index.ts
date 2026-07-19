@@ -2,6 +2,7 @@ export * from './aggregate-root/aggregate-root';
 export * from './booking/booking';
 export * from './booking/booking-status';
 export * from './domain-event/domain-event';
+export * from './domain-event/platform-domain-events';
 export * from './entity/entity';
 export * from './event/event';
 export * from './event/event-status';

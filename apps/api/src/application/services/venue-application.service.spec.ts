@@ -10,6 +10,8 @@ import {
 import { ApplicationValidationException } from '../exceptions/application-validation.exception';
 import type { VenueRepositoryPort } from '../interfaces/application-repository.interface';
 import { VenueApplicationService } from './venue-application.service';
+import { AuditLogService } from '../platform/audit-log.service';
+import { DomainEventDispatcherService } from '../platform/domain-event-dispatcher.service';
 
 describe('VenueApplicationService', () => {
   const venue = new Venue(
@@ -29,7 +31,10 @@ describe('VenueApplicationService', () => {
     findById: jest.fn(async (_id: UniqueEntityId) => venue),
     update: jest.fn(async (_id: UniqueEntityId, entity: Venue) => entity),
   };
-  const service = new VenueApplicationService(repository);
+  const service = new VenueApplicationService(
+    repository,
+    new DomainEventDispatcherService(new AuditLogService()),
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

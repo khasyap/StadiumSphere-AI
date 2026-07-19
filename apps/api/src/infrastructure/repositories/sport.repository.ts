@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
 
 import type { SportRepositoryPort } from '../../application';
-import type { Sport, UniqueEntityId } from '../../domain';
+import type { Sport } from '../../domain';
 import { SportPersistenceMapper } from '../mappers/sport.persistence-mapper';
 import { SPORT_PERSISTENCE_MODEL } from '../schemas/sport.schema';
 import type { SportPersistence } from '../schemas/sport.schema';

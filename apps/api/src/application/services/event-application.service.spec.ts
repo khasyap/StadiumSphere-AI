@@ -2,6 +2,8 @@ import { Event, EventStatus, TimeSlot, UniqueEntityId } from '../../domain';
 import { ApplicationValidationException } from '../exceptions/application-validation.exception';
 import type { EventRepositoryPort } from '../interfaces/application-repository.interface';
 import { EventApplicationService } from './event-application.service';
+import { AuditLogService } from '../platform/audit-log.service';
+import { DomainEventDispatcherService } from '../platform/domain-event-dispatcher.service';
 
 describe('EventApplicationService', () => {
   const startsAt = new Date('2030-07-18T18:00:00.000Z');
@@ -18,7 +20,10 @@ describe('EventApplicationService', () => {
     findById: jest.fn(async (_id: UniqueEntityId) => scheduledEvent),
     update: jest.fn(async (_id: UniqueEntityId, entity: Event) => entity),
   };
-  const service = new EventApplicationService(repository);
+  const service = new EventApplicationService(
+    repository,
+    new DomainEventDispatcherService(new AuditLogService()),
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

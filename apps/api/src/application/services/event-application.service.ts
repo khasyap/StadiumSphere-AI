@@ -1,11 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { Event, EventStatus, TimeSlot, UniqueEntityId } from '../../domain';
+import {
+  createPlatformDomainEvent,
+  Event,
+  EventStatus,
+  TimeSlot,
+  UniqueEntityId,
+} from '../../domain';
+import type { PlatformDomainEventName } from '../../domain';
 import { ApplicationEntityNotFoundException } from '../exceptions/application-entity-not-found.exception';
 import { ApplicationValidationException } from '../exceptions/application-validation.exception';
 import type { EventRepositoryPort } from '../interfaces/application-repository.interface';
 import { EVENT_REPOSITORY } from '../interfaces/application-repository.interface';
 import { CrudApplicationService } from './crud-application.service';
+import { DomainEventDispatcherService } from '../platform/domain-event-dispatcher.service';
 
 export interface EventCreateCommand {
   endsAt: Date;
@@ -25,14 +33,19 @@ export class EventApplicationService extends CrudApplicationService<
   EventCreateCommand,
   EventUpdateCommand
 > {
-  public constructor(@Inject(EVENT_REPOSITORY) private readonly eventRepository: EventRepositoryPort) {
+  public constructor(
+    @Inject(EVENT_REPOSITORY) private readonly eventRepository: EventRepositoryPort,
+    private readonly domainEventDispatcher: DomainEventDispatcherService,
+  ) {
     super(eventRepository);
   }
 
   public override async create(command: EventCreateCommand): Promise<Record<string, unknown>> {
     const timeSlot = this.createTimeSlot(command.startsAt, command.endsAt);
     await this.ensureScheduleAvailable(timeSlot);
-    return super.create(command);
+    const event = this.createEntity(command);
+    const created = await this.eventRepository.create(event);
+    return created.toJSON() as Record<string, unknown>;
   }
 
   public override async update(
@@ -64,15 +77,15 @@ export class EventApplicationService extends CrudApplicationService<
   }
 
   public async start(id: string): Promise<Record<string, unknown>> {
-    return this.transition(id, EventStatus.SCHEDULED, EventStatus.LIVE, 'start');
+    return this.transition(id, EventStatus.SCHEDULED, EventStatus.LIVE, 'start', 'EventStarted');
   }
 
   public async finish(id: string): Promise<Record<string, unknown>> {
-    return this.transition(id, EventStatus.LIVE, EventStatus.FINISHED, 'finish');
+    return this.transition(id, EventStatus.LIVE, EventStatus.FINISHED, 'finish', 'EventFinished');
   }
 
   public async cancel(id: string): Promise<Record<string, unknown>> {
-    return this.transition(id, EventStatus.SCHEDULED, EventStatus.CANCELLED, 'cancel');
+    return this.transition(id, EventStatus.SCHEDULED, EventStatus.CANCELLED, 'cancel', 'EventCancelled');
   }
 
   protected createEntity(command: EventCreateCommand): Event {
@@ -129,6 +142,7 @@ export class EventApplicationService extends CrudApplicationService<
     expected: EventStatus,
     next: EventStatus,
     action: string,
+    eventName: PlatformDomainEventName,
   ): Promise<Record<string, unknown>> {
     const event = await this.getEvent(id);
 
@@ -144,6 +158,10 @@ export class EventApplicationService extends CrudApplicationService<
       ),
     );
 
+    this.domainEventDispatcher.dispatch(
+      updated,
+      createPlatformDomainEvent(eventName, updated.id, updated.toJSON() as Record<string, unknown>),
+    );
     return updated.toJSON() as Record<string, unknown>;
   }
 }

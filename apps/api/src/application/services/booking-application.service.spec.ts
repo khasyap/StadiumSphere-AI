@@ -5,6 +5,8 @@ import type {
   EventRepositoryPort,
 } from '../interfaces/application-repository.interface';
 import { BookingApplicationService } from './booking-application.service';
+import { AuditLogService } from '../platform/audit-log.service';
+import { DomainEventDispatcherService } from '../platform/domain-event-dispatcher.service';
 
 describe('BookingApplicationService', () => {
   const event = new Event(
@@ -34,7 +36,11 @@ describe('BookingApplicationService', () => {
     findById: jest.fn(async (_id: UniqueEntityId) => event),
     update: jest.fn(async (_id: UniqueEntityId, entity: Event) => entity),
   };
-  const service = new BookingApplicationService(bookingRepository, eventRepository);
+  const service = new BookingApplicationService(
+    bookingRepository,
+    eventRepository,
+    new DomainEventDispatcherService(new AuditLogService()),
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

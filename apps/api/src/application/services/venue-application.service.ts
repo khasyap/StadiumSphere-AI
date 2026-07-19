@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   Address,
   Coordinates,
+  createPlatformDomainEvent,
   GeoLocation,
   TimeSlot,
   UniqueEntityId,
@@ -14,6 +15,7 @@ import { ApplicationValidationException } from '../exceptions/application-valida
 import type { VenueRepositoryPort } from '../interfaces/application-repository.interface';
 import { VENUE_REPOSITORY } from '../interfaces/application-repository.interface';
 import { CrudApplicationService } from './crud-application.service';
+import { DomainEventDispatcherService } from '../platform/domain-event-dispatcher.service';
 
 interface VenueAddressCommand {
   addressLine1?: string;
@@ -40,7 +42,10 @@ export class VenueApplicationService extends CrudApplicationService<
   VenueCreateCommand,
   VenueUpdateCommand
 > {
-  public constructor(@Inject(VENUE_REPOSITORY) repository: VenueRepositoryPort) {
+  public constructor(
+    @Inject(VENUE_REPOSITORY) repository: VenueRepositoryPort,
+    private readonly domainEventDispatcher: DomainEventDispatcherService,
+  ) {
     super(repository);
   }
 
@@ -55,7 +60,7 @@ export class VenueApplicationService extends CrudApplicationService<
       throw new ApplicationValidationException('Venue already has an active reservation.');
     }
 
-    return this.persist(venue, VenueStatus.RESERVED, new TimeSlot(startsAt, endsAt));
+    return this.persist(venue, VenueStatus.RESERVED, new TimeSlot(startsAt, endsAt), 'VenueReserved');
   }
 
   public async release(id: string): Promise<Record<string, unknown>> {
@@ -65,7 +70,7 @@ export class VenueApplicationService extends CrudApplicationService<
       throw new ApplicationValidationException(`Venue cannot be released from ${venue.status}.`);
     }
 
-    return this.persist(venue, VenueStatus.AVAILABLE);
+    return this.persist(venue, VenueStatus.AVAILABLE, undefined, 'VenueReleased');
   }
 
   public async maintenance(id: string): Promise<Record<string, unknown>> {
@@ -170,6 +175,7 @@ export class VenueApplicationService extends CrudApplicationService<
     venue: Venue,
     status: VenueStatus,
     reservationTimeSlot?: TimeSlot,
+    eventName?: 'VenueReleased' | 'VenueReserved',
   ): Promise<Record<string, unknown>> {
     const current = venue.toJSON();
     const props = {
@@ -183,6 +189,13 @@ export class VenueApplicationService extends CrudApplicationService<
         ? new Venue(props, venue.id)
         : new Venue({ ...props, reservationTimeSlot }, venue.id),
     );
+
+    if (eventName !== undefined) {
+      this.domainEventDispatcher.dispatch(
+        updated,
+        createPlatformDomainEvent(eventName, updated.id, updated.toJSON() as Record<string, unknown>),
+      );
+    }
 
     return updated.toJSON() as Record<string, unknown>;
   }

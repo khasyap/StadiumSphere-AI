@@ -20,6 +20,11 @@ import { SportApplicationService } from './services/sport-application.service';
 import { TeamApplicationService } from './services/team-application.service';
 import { UserApplicationService } from './services/user-application.service';
 import { VenueApplicationService } from './services/venue-application.service';
+import { ActivityTimelineService } from './platform/activity-timeline.service';
+import { AuditLogService } from './platform/audit-log.service';
+import { DashboardService } from './platform/dashboard.service';
+import { DomainEventDispatcherService } from './platform/domain-event-dispatcher.service';
+import { PlatformStatisticsService } from './platform/statistics.service';
 import { RepositoryModule } from '../infrastructure/repository.module';
 import { AuthenticationInfrastructureModule } from '../infrastructure/authentication/authentication-infrastructure.module';
 
@@ -35,6 +40,11 @@ import { AuthenticationInfrastructureModule } from '../infrastructure/authentica
     SportApplicationService,
     EventApplicationService,
     AuthenticationApplicationService,
+    AuditLogService,
+    DomainEventDispatcherService,
+    ActivityTimelineService,
+    DashboardService,
+    PlatformStatisticsService,
     { provide: USER_APPLICATION_SERVICE, useExisting: UserApplicationService },
     { provide: STADIUM_APPLICATION_SERVICE, useExisting: StadiumApplicationService },
     { provide: VENUE_APPLICATION_SERVICE, useExisting: VenueApplicationService },
@@ -55,6 +65,10 @@ import { AuthenticationInfrastructureModule } from '../infrastructure/authentica
     SPORT_APPLICATION_SERVICE,
     EVENT_APPLICATION_SERVICE,
     AUTHENTICATION_APPLICATION_SERVICE,
+    AuditLogService,
+    ActivityTimelineService,
+    DashboardService,
+    PlatformStatisticsService,
   ],
 })
 export class ApplicationModule {}

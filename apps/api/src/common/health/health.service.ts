@@ -17,11 +17,14 @@ export class HealthService {
     const redis = this.redisHealthService.getStatus();
 
     return {
+      apiVersion: 'v1',
       database,
+      environment: process.env.NODE_ENV ?? 'unknown',
       redis,
       service: 'api',
       status: database === 'connected' && redis === 'connected' ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
+      uptime: Math.floor(process.uptime()),
       version: '0.1.0',
     };
   }

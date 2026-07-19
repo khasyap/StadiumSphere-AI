@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { Capacity, Stadium, StadiumStatus, UniqueEntityId } from '../../domain';
+import { Capacity, createPlatformDomainEvent, Stadium, StadiumStatus, UniqueEntityId } from '../../domain';
 import { ApplicationEntityNotFoundException } from '../exceptions/application-entity-not-found.exception';
 import { ApplicationValidationException } from '../exceptions/application-validation.exception';
 import type { StadiumRepositoryPort } from '../interfaces/application-repository.interface';
 import { STADIUM_REPOSITORY } from '../interfaces/application-repository.interface';
 import { CrudApplicationService } from './crud-application.service';
+import { DomainEventDispatcherService } from '../platform/domain-event-dispatcher.service';
 
 export interface StadiumCreateCommand {
   capacity: number;
@@ -23,7 +24,10 @@ export class StadiumApplicationService extends CrudApplicationService<
   StadiumCreateCommand,
   StadiumUpdateCommand
 > {
-  public constructor(@Inject(STADIUM_REPOSITORY) repository: StadiumRepositoryPort) {
+  public constructor(
+    @Inject(STADIUM_REPOSITORY) repository: StadiumRepositoryPort,
+    private readonly domainEventDispatcher: DomainEventDispatcherService,
+  ) {
     super(repository);
   }
 
@@ -34,7 +38,7 @@ export class StadiumApplicationService extends CrudApplicationService<
       throw new ApplicationValidationException(`Stadium cannot open from ${stadium.status}.`);
     }
 
-    return this.persistStatus(stadium, StadiumStatus.AVAILABLE);
+    return this.persistStatus(stadium, StadiumStatus.AVAILABLE, 'StadiumOpened');
   }
 
   public async close(id: string): Promise<Record<string, unknown>> {
@@ -44,7 +48,7 @@ export class StadiumApplicationService extends CrudApplicationService<
       throw new ApplicationValidationException('Stadium is already closed.');
     }
 
-    return this.persistStatus(stadium, StadiumStatus.CLOSED);
+    return this.persistStatus(stadium, StadiumStatus.CLOSED, 'StadiumClosed');
   }
 
   public async maintenance(id: string): Promise<Record<string, unknown>> {
@@ -98,12 +102,20 @@ export class StadiumApplicationService extends CrudApplicationService<
   private async persistStatus(
     stadium: Stadium,
     status: StadiumStatus,
+    eventName?: 'StadiumClosed' | 'StadiumOpened',
   ): Promise<Record<string, unknown>> {
     const current = stadium.toJSON();
     const updated = await this.repository.update(
       stadium.id,
       new Stadium({ capacity: current.capacity, name: current.name, status }, stadium.id),
     );
+
+    if (eventName !== undefined) {
+      this.domainEventDispatcher.dispatch(
+        updated,
+        createPlatformDomainEvent(eventName, updated.id, updated.toJSON() as Record<string, unknown>),
+      );
+    }
 
     return updated.toJSON() as Record<string, unknown>;
   }

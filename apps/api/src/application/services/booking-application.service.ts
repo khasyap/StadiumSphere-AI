@@ -1,6 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { Booking, BookingStatus, EventStatus, UniqueEntityId } from '../../domain';
+import {
+  Booking,
+  BookingStatus,
+  createPlatformDomainEvent,
+  EventStatus,
+  UniqueEntityId,
+} from '../../domain';
+import type { PlatformDomainEventName } from '../../domain';
 import type { BookingProps } from '../../domain';
 import { ApplicationEntityNotFoundException } from '../exceptions/application-entity-not-found.exception';
 import { ApplicationValidationException } from '../exceptions/application-validation.exception';
@@ -13,6 +20,7 @@ import {
   EVENT_REPOSITORY,
 } from '../interfaces/application-repository.interface';
 import { CrudApplicationService } from './crud-application.service';
+import { DomainEventDispatcherService } from '../platform/domain-event-dispatcher.service';
 
 export interface BookingCreateCommand {
   eventId: string;
@@ -33,13 +41,16 @@ export class BookingApplicationService extends CrudApplicationService<
   public constructor(
     @Inject(BOOKING_REPOSITORY) private readonly bookingRepository: BookingRepositoryPort,
     @Inject(EVENT_REPOSITORY) private readonly eventRepository: EventRepositoryPort,
+    private readonly domainEventDispatcher: DomainEventDispatcherService,
   ) {
     super(bookingRepository);
   }
 
   public override async create(command: BookingCreateCommand): Promise<Record<string, unknown>> {
     await this.ensureBookableEvent(command.eventId);
-    return super.create(command);
+    const created = await this.bookingRepository.create(this.createEntity(command));
+    this.publish(created, 'BookingCreated');
+    return created.toJSON() as Record<string, unknown>;
   }
 
   public override async update(
@@ -66,7 +77,7 @@ export class BookingApplicationService extends CrudApplicationService<
     const booking = await this.getBooking(id);
     this.ensureTransition(booking.status, BookingStatus.PENDING, 'confirm');
     await this.ensureBookableEvent(booking.eventId.toString());
-    return this.toWorkflowResponse(await this.persistStatus(booking, BookingStatus.CONFIRMED));
+    return this.toWorkflowResponse(await this.persistStatus(booking, BookingStatus.CONFIRMED, 'BookingConfirmed'));
   }
 
   public async cancel(id: string): Promise<Record<string, unknown>> {
@@ -76,7 +87,7 @@ export class BookingApplicationService extends CrudApplicationService<
       throw new ApplicationValidationException(`Booking cannot be cancelled from ${booking.status}.`);
     }
 
-    return this.toWorkflowResponse(await this.persistStatus(booking, BookingStatus.CANCELLED));
+    return this.toWorkflowResponse(await this.persistStatus(booking, BookingStatus.CANCELLED, 'BookingCancelled'));
   }
 
   public async checkIn(id: string): Promise<Record<string, unknown>> {
@@ -88,7 +99,7 @@ export class BookingApplicationService extends CrudApplicationService<
   public async complete(id: string): Promise<Record<string, unknown>> {
     const booking = await this.getBooking(id);
     this.ensureTransition(booking.status, BookingStatus.CHECKED_IN, 'complete');
-    return this.toWorkflowResponse(await this.persistStatus(booking, BookingStatus.COMPLETED));
+    return this.toWorkflowResponse(await this.persistStatus(booking, BookingStatus.COMPLETED, 'BookingCompleted'));
   }
 
   protected createEntity(command: BookingCreateCommand): Booking {
@@ -135,8 +146,18 @@ export class BookingApplicationService extends CrudApplicationService<
     return booking;
   }
 
-  private async persistStatus(booking: Booking, status: BookingStatus): Promise<Booking> {
-    return this.bookingRepository.update(booking.id, this.withProperties(booking, { status }));
+  private async persistStatus(
+    booking: Booking,
+    status: BookingStatus,
+    eventName?: PlatformDomainEventName,
+  ): Promise<Booking> {
+    const updated = await this.bookingRepository.update(booking.id, this.withProperties(booking, { status }));
+
+    if (eventName !== undefined) {
+      this.publish(updated, eventName);
+    }
+
+    return updated;
   }
 
   private toWorkflowResponse(booking: Booking): Record<string, unknown> {
@@ -152,6 +173,13 @@ export class BookingApplicationService extends CrudApplicationService<
         status: changes.status ?? booking.status,
       },
       booking.id,
+    );
+  }
+
+  private publish(booking: Booking, name: PlatformDomainEventName): void {
+    this.domainEventDispatcher.dispatch(
+      booking,
+      createPlatformDomainEvent(name, booking.id, booking.toJSON() as Record<string, unknown>),
     );
   }
 }
