@@ -27,9 +27,10 @@ import { DomainEventDispatcherService } from './platform/domain-event-dispatcher
 import { PlatformStatisticsService } from './platform/statistics.service';
 import { RepositoryModule } from '../infrastructure/repository.module';
 import { AuthenticationInfrastructureModule } from '../infrastructure/authentication/authentication-infrastructure.module';
+import { AiInfrastructureModule } from '../infrastructure/ai/ai-infrastructure.module';
 
 @Module({
-  imports: [RepositoryModule, AuthenticationInfrastructureModule],
+  imports: [RepositoryModule, AuthenticationInfrastructureModule, AiInfrastructureModule],
   providers: [
     UserApplicationService,
     StadiumApplicationService,
@@ -65,6 +66,7 @@ import { AuthenticationInfrastructureModule } from '../infrastructure/authentica
     SPORT_APPLICATION_SERVICE,
     EVENT_APPLICATION_SERVICE,
     AUTHENTICATION_APPLICATION_SERVICE,
+    AiInfrastructureModule,
     AuditLogService,
     ActivityTimelineService,
     DashboardService,

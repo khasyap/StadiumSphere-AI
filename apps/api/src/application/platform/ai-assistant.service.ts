@@ -2,6 +2,8 @@ export interface AiAssistantService {
   answer(prompt: string): Promise<string>;
 }
 
+export const AI_ASSISTANT_SERVICE = Symbol('Application.AiAssistantService');
+
 export interface PredictionService {
   predict(subject: string): Promise<string>;
 }

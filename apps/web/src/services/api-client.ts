@@ -13,6 +13,16 @@ function getAccessToken(): string | undefined {
   return token === null || token.length === 0 ? undefined : token;
 }
 
+function persistTokens(tokens: AuthenticationTokens): void {
+  window.localStorage.setItem('stadiumsphere-access-token', tokens.accessToken);
+  window.localStorage.setItem('stadiumsphere-refresh-token', tokens.refreshToken);
+}
+
+export interface AuthenticationTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
 async function readResponse<T>(response: Response): Promise<T> {
   const payload: unknown = await response.json().catch(() => undefined);
 
@@ -58,5 +68,16 @@ export const resourceApi = {
   },
   workflow<T>(path: string, input?: unknown): Promise<T> {
     return apiRequest<T>(path, input === undefined ? { method: 'POST' } : { body: JSON.stringify(input), method: 'POST' });
+  },
+};
+
+export const authenticationApi = {
+  async login(email: string, password: string): Promise<AuthenticationTokens> {
+    const tokens = await apiRequest<AuthenticationTokens>('/auth/login', {
+      body: JSON.stringify({ email, password }),
+      method: 'POST',
+    });
+    persistTokens(tokens);
+    return tokens;
   },
 };

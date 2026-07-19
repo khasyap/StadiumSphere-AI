@@ -9,7 +9,7 @@ const DashboardPage = lazy(async () => import('@/pages/workspace-pages').then((m
 const AnalyticsPage = lazy(async () => import('@/pages/workspace-pages').then((module) => ({ default: module.AnalyticsPage })));
 const ActivityPage = lazy(async () => import('@/pages/workspace-pages').then((module) => ({ default: module.ActivityPage })));
 const AssistantPage = lazy(async () => import('@/pages/workspace-pages').then((module) => ({ default: module.AssistantPage })));
-const SettingsPage = lazy(async () => import('@/pages/workspace-pages').then((module) => ({ default: module.SettingsPage })));
+const SettingsPage = lazy(async () => import('@/pages/settings-page').then((module) => ({ default: module.SettingsPage })));
 const HelpPage = lazy(async () => import('@/pages/workspace-pages').then((module) => ({ default: module.HelpPage })));
 const AboutPage = lazy(async () => import('@/pages/workspace-pages').then((module) => ({ default: module.AboutPage })));
 const OrganizationsPage = lazy(async () => import('@/features/operations/organizations-page').then((module) => ({ default: module.OrganizationsPage })));
