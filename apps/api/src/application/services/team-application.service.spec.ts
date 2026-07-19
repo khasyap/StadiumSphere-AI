@@ -15,6 +15,7 @@ describe('TeamApplicationService', () => {
     existsBySportId: jest.fn(async (_sportId: UniqueEntityId) => false),
     findAll: jest.fn(async () => [team]),
     findById: jest.fn(async (_id: UniqueEntityId) => team),
+    findBySportIdAndName: jest.fn(async (_sportId: UniqueEntityId, _name: string) => null),
     update: jest.fn(async (_id: UniqueEntityId, entity: Team) => entity),
   };
   const sportRepository: jest.Mocked<SportRepositoryPort> = {
@@ -22,6 +23,7 @@ describe('TeamApplicationService', () => {
     delete: jest.fn(async (_id: UniqueEntityId) => undefined),
     findAll: jest.fn(async () => [team.toJSON().sport]),
     findById: jest.fn(async (_id: UniqueEntityId) => team.toJSON().sport),
+    findByName: jest.fn(async (_name: string) => null),
     update: jest.fn(async (_id: UniqueEntityId, entity: Sport) => entity),
   };
   const service = new TeamApplicationService(repository, sportRepository);
@@ -58,5 +60,14 @@ describe('TeamApplicationService', () => {
     await expect(service.update('team-1', { sportName: 'Cricket' })).rejects.toBeInstanceOf(
       ApplicationValidationException,
     );
+  });
+
+  it('rejects duplicate Team names within a Sport', async () => {
+    repository.findBySportIdAndName.mockResolvedValueOnce(team);
+
+    await expect(
+      service.create({ name: 'StadiumSphere FC', sportId: 'sport-1', sportName: 'Football' }),
+    ).rejects.toBeInstanceOf(ApplicationValidationException);
+    expect(repository.create).not.toHaveBeenCalled();
   });
 });

@@ -23,6 +23,7 @@ const createModel = (): Model<SportPersistence> => {
     create: jest.fn().mockResolvedValue(document),
     find: jest.fn().mockReturnValue(collectionQuery),
     findById: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
+    findOne: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
     findByIdAndDelete: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
     findByIdAndUpdate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
   } as unknown as Model<SportPersistence>;
@@ -47,5 +48,12 @@ describe('SportRepository', () => {
     jest.mocked(model.create).mockRejectedValueOnce({ code: 11_000 });
 
     await expect(new SportRepository(model).create(sport)).rejects.toBeInstanceOf(DuplicateEntityException);
+  });
+
+  it('looks up Sport names through the shared repository infrastructure', async () => {
+    const model = createModel();
+
+    await expect(new SportRepository(model).findByName('Football')).resolves.toBeInstanceOf(Sport);
+    expect(model.findOne).toHaveBeenCalledWith({ name: 'Football' });
   });
 });

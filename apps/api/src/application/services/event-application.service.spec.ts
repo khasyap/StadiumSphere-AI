@@ -57,4 +57,21 @@ describe('EventApplicationService', () => {
       }),
     ).rejects.toBeInstanceOf(ApplicationValidationException);
   });
+
+  it('keeps finished events immutable', async () => {
+    repository.findById.mockResolvedValueOnce(
+      new Event(
+        {
+          name: scheduledEvent.toJSON().name,
+          status: EventStatus.FINISHED,
+          timeSlot: scheduledEvent.toJSON().timeSlot,
+        },
+        scheduledEvent.id,
+      ),
+    );
+
+    await expect(service.update('event-1', { name: 'Updated Final' })).rejects.toBeInstanceOf(
+      ApplicationValidationException,
+    );
+  });
 });

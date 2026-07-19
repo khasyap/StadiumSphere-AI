@@ -27,10 +27,13 @@ export type StadiumRepositoryPort = ApplicationRepository<Stadium>;
 export type VenueRepositoryPort = ApplicationRepository<Venue>;
 export interface TeamRepositoryPort extends ApplicationRepository<Team> {
   existsBySportId(sportId: UniqueEntityId): Promise<boolean>;
+  findBySportIdAndName(sportId: UniqueEntityId, name: string): Promise<Team | null>;
 }
 export type OrganizationRepositoryPort = ApplicationRepository<Organization>;
 export type BookingRepositoryPort = ApplicationRepository<Booking>;
-export type SportRepositoryPort = ApplicationRepository<Sport>;
+export interface SportRepositoryPort extends ApplicationRepository<Sport> {
+  findByName(name: string): Promise<Sport | null>;
+}
 export interface EventRepositoryPort extends ApplicationRepository<Event> {
   existsByTimeSlot(timeSlot: TimeSlot): Promise<boolean>;
 }

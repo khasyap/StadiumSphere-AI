@@ -1,4 +1,6 @@
 import type { RestApplicationService } from '../../application';
+import { UserRole } from '../../domain';
+import { ROLES_KEY } from '../decorators/roles.decorator';
 import { CreateSportDto, UpdateSportDto } from '../dto/sport.dto';
 import { SportController } from './sport.controller';
 
@@ -35,5 +37,19 @@ describe('SportController', () => {
     expect(service.create).toHaveBeenCalledWith(create);
     expect(service.update).toHaveBeenCalledWith('sport-1', update);
     expect(service.delete).toHaveBeenCalledWith('sport-1');
+  });
+
+  it('declares the required read, write, and delete roles', () => {
+    expect(Reflect.getMetadata(ROLES_KEY, SportController.prototype.list)).toEqual([
+      UserRole.ADMIN,
+      UserRole.MANAGER,
+      UserRole.STAFF,
+      UserRole.USER,
+    ]);
+    expect(Reflect.getMetadata(ROLES_KEY, SportController.prototype.create)).toEqual([
+      UserRole.ADMIN,
+      UserRole.MANAGER,
+    ]);
+    expect(Reflect.getMetadata(ROLES_KEY, SportController.prototype.delete)).toEqual([UserRole.ADMIN]);
   });
 });

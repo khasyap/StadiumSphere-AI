@@ -1,4 +1,6 @@
 import type { EventApplicationService } from '../../application';
+import { UserRole } from '../../domain';
+import { ROLES_KEY } from '../decorators/roles.decorator';
 import { CreateEventDto, UpdateEventDto } from '../dto/event.dto';
 import { EventController } from './event.controller';
 
@@ -52,5 +54,19 @@ describe('EventController', () => {
     expect(service.start).toHaveBeenCalledWith('event-1');
     expect(service.finish).toHaveBeenCalledWith('event-1');
     expect(service.cancel).toHaveBeenCalledWith('event-1');
+  });
+
+  it('declares the required read, write, and delete roles', () => {
+    expect(Reflect.getMetadata(ROLES_KEY, EventController.prototype.list)).toEqual([
+      UserRole.ADMIN,
+      UserRole.MANAGER,
+      UserRole.STAFF,
+      UserRole.USER,
+    ]);
+    expect(Reflect.getMetadata(ROLES_KEY, EventController.prototype.create)).toEqual([
+      UserRole.ADMIN,
+      UserRole.MANAGER,
+    ]);
+    expect(Reflect.getMetadata(ROLES_KEY, EventController.prototype.delete)).toEqual([UserRole.ADMIN]);
   });
 });

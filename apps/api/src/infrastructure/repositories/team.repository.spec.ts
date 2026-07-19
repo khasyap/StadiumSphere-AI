@@ -27,6 +27,7 @@ const createModel = (): Model<TeamPersistence> => {
     exists: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(true) }),
     find: jest.fn().mockReturnValue(collectionQuery),
     findById: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
+    findOne: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
     findByIdAndDelete: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
     findByIdAndUpdate: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(document) }),
   } as unknown as Model<TeamPersistence>;
@@ -62,5 +63,14 @@ describe('TeamRepository', () => {
 
     await expect(new TeamRepository(model).existsBySportId(new UniqueEntityId('sport-1'))).resolves.toBe(true);
     expect(model.exists).toHaveBeenCalledWith({ sportId: 'sport-1' });
+  });
+
+  it('looks up Team names within a Sport through the shared repository infrastructure', async () => {
+    const model = createModel();
+
+    await expect(
+      new TeamRepository(model).findBySportIdAndName(new UniqueEntityId('sport-1'), 'StadiumSphere FC'),
+    ).resolves.toBeInstanceOf(Team);
+    expect(model.findOne).toHaveBeenCalledWith({ name: 'StadiumSphere FC', sportId: 'sport-1' });
   });
 });

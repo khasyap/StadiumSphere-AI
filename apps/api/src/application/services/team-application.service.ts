@@ -26,15 +26,16 @@ export class TeamApplicationService extends CrudApplicationService<
   TeamUpdateCommand
 > {
   public constructor(
-    @Inject(TEAM_REPOSITORY) repository: TeamRepositoryPort,
+    @Inject(TEAM_REPOSITORY) private readonly teamRepository: TeamRepositoryPort,
     @Inject(SPORT_REPOSITORY) private readonly sportRepository: SportRepositoryPort,
   ) {
-    super(repository);
+    super(teamRepository);
   }
 
   public override async create(command: TeamCreateCommand): Promise<Record<string, unknown>> {
     const sport = await this.getSport(command.sportId);
     this.assertSportName(command.sportName, sport);
+    await this.assertNameAvailable(sport.id, command.name);
 
     return super.create({ ...command, sportName: sport.toJSON().name });
   }
@@ -43,11 +44,14 @@ export class TeamApplicationService extends CrudApplicationService<
     id: string,
     command: TeamUpdateCommand,
   ): Promise<Record<string, unknown>> {
+    const team = await this.getTeam(id);
+
     if (command.sportName !== undefined && command.sportId === undefined) {
       throw new ApplicationValidationException('sportName can only be changed with sportId.');
     }
 
     if (command.sportId === undefined) {
+      await this.assertNameAvailable(team.toJSON().sport.id, command.name ?? team.toJSON().name, id);
       return super.update(id, command);
     }
 
@@ -56,6 +60,8 @@ export class TeamApplicationService extends CrudApplicationService<
     if (command.sportName !== undefined) {
       this.assertSportName(command.sportName, sport);
     }
+
+    await this.assertNameAvailable(sport.id, command.name ?? team.toJSON().name, id);
 
     return super.update(id, { ...command, sportName: sport.toJSON().name });
   }
@@ -94,9 +100,31 @@ export class TeamApplicationService extends CrudApplicationService<
     return sport;
   }
 
+  private async getTeam(id: string): Promise<Team> {
+    const team = await this.teamRepository.findById(new UniqueEntityId(id));
+
+    if (team === null) {
+      throw new ApplicationEntityNotFoundException(id);
+    }
+
+    return team;
+  }
+
   private assertSportName(sportName: string, sport: Sport): void {
     if (sportName !== sport.toJSON().name) {
       throw new ApplicationValidationException('sportName must match the referenced Sport.');
+    }
+  }
+
+  private async assertNameAvailable(
+    sportId: UniqueEntityId,
+    name: string,
+    currentId?: string,
+  ): Promise<void> {
+    const team = await this.teamRepository.findBySportIdAndName(sportId, name);
+
+    if (team !== null && team.id.toString() !== currentId) {
+      throw new ApplicationValidationException('A Team with this name already exists for the Sport.');
     }
   }
 }

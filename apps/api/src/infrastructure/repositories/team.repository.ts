@@ -21,4 +21,8 @@ export class TeamRepository
   public async existsBySportId(sportId: UniqueEntityId): Promise<boolean> {
     return this.exists({ sportId: sportId.toString() });
   }
+
+  public async findBySportIdAndName(sportId: UniqueEntityId, name: string): Promise<Team | null> {
+    return this.findOne({ name, sportId: sportId.toString() });
+  }
 }

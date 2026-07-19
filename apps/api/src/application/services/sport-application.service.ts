@@ -21,10 +21,10 @@ export class SportApplicationService extends CrudApplicationService<
   SportUpdateCommand
 > {
   public constructor(
-    @Inject(SPORT_REPOSITORY) repository: SportRepositoryPort,
+    @Inject(SPORT_REPOSITORY) private readonly sportRepository: SportRepositoryPort,
     @Inject(TEAM_REPOSITORY) private readonly teamRepository: TeamRepositoryPort,
   ) {
-    super(repository);
+    super(sportRepository);
   }
 
   public override async delete(id: string): Promise<void> {
@@ -35,11 +35,35 @@ export class SportApplicationService extends CrudApplicationService<
     await super.delete(id);
   }
 
+  public override async create(command: SportCreateCommand): Promise<Record<string, unknown>> {
+    await this.assertNameAvailable(command.name);
+    return super.create(command);
+  }
+
+  public override async update(
+    id: string,
+    command: SportUpdateCommand,
+  ): Promise<Record<string, unknown>> {
+    if (command.name !== undefined) {
+      await this.assertNameAvailable(command.name, id);
+    }
+
+    return super.update(id, command);
+  }
+
   protected createEntity(command: SportCreateCommand): Sport {
     return new Sport({ name: command.name });
   }
 
   protected updateEntity(current: Sport, command: SportUpdateCommand): Sport {
     return new Sport({ name: command.name ?? current.toJSON().name }, current.id);
+  }
+
+  private async assertNameAvailable(name: string, currentId?: string): Promise<void> {
+    const sport = await this.sportRepository.findByName(name);
+
+    if (sport !== null && sport.id.toString() !== currentId) {
+      throw new ApplicationValidationException('A Sport with this name already exists.');
+    }
   }
 }

@@ -10,6 +10,7 @@ describe('SportApplicationService', () => {
     delete: jest.fn(async (_id: UniqueEntityId) => undefined),
     findAll: jest.fn(async () => [sport]),
     findById: jest.fn(async (_id: UniqueEntityId) => sport),
+    findByName: jest.fn(async (_name: string) => null),
     update: jest.fn(async (_id: UniqueEntityId, entity: Sport) => entity),
   };
   const teamRepository: jest.Mocked<TeamRepositoryPort> = {
@@ -18,6 +19,7 @@ describe('SportApplicationService', () => {
     existsBySportId: jest.fn(async (_sportId: UniqueEntityId) => false),
     findAll: jest.fn(async () => []),
     findById: jest.fn(async (_id: UniqueEntityId) => null),
+    findBySportIdAndName: jest.fn(async (_sportId: UniqueEntityId, _name: string) => null),
     update: jest.fn(async (_id: UniqueEntityId, entity) => entity),
   };
   const service = new SportApplicationService(repository, teamRepository);
@@ -44,5 +46,12 @@ describe('SportApplicationService', () => {
     jest.mocked(teamRepository.existsBySportId).mockResolvedValueOnce(true);
 
     await expect(service.delete('sport-1')).rejects.toBeInstanceOf(ApplicationValidationException);
+  });
+
+  it('rejects duplicate Sport names before persistence', async () => {
+    repository.findByName.mockResolvedValueOnce(sport);
+
+    await expect(service.create({ name: 'Football' })).rejects.toBeInstanceOf(ApplicationValidationException);
+    expect(repository.create).not.toHaveBeenCalled();
   });
 });

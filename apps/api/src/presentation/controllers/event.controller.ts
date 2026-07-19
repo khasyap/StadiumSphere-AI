@@ -29,29 +29,47 @@ export class EventController extends ResourceController<CreateEventDto, UpdateEv
   }
 
   @Get()
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF, UserRole.USER)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'List events' })
   @ApiResponse({ status: 200, description: 'Events retrieved.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
   public list(): Promise<SuccessResponse<readonly unknown[]>> {
     return this.listResources();
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STAFF, UserRole.USER)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get an event' })
   @ApiResponse({ status: 200, description: 'Event retrieved.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
   public getById(@Param('id') id: string): Promise<SuccessResponse<unknown>> {
     return this.getResource(id);
   }
 
   @Post()
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create an event' })
   @ApiResponse({ status: 201, description: 'Event created.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
   public create(@Body() dto: CreateEventDto): Promise<SuccessResponse<unknown>> {
     return this.createResource(dto);
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an event' })
   @ApiResponse({ status: 200, description: 'Event updated.' })
+  @ApiForbiddenResponse({ description: 'Manager or Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
   public update(
     @Param('id') id: string,
     @Body() dto: UpdateEventDto,
@@ -60,8 +78,13 @@ export class EventController extends ResourceController<CreateEventDto, UpdateEv
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthenticationGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete an event' })
   @ApiResponse({ status: 200, description: 'Event deleted.' })
+  @ApiForbiddenResponse({ description: 'Admin role is required.' })
+  @ApiUnauthorizedResponse({ description: 'A valid access token is required.' })
   public delete(@Param('id') id: string): Promise<SuccessResponse<undefined>> {
     return this.deleteResource(id);
   }

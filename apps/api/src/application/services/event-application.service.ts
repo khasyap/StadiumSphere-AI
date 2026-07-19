@@ -42,6 +42,10 @@ export class EventApplicationService extends CrudApplicationService<
     const event = await this.getEvent(id);
     const current = event.toJSON();
 
+    if (event.status === EventStatus.FINISHED) {
+      throw new ApplicationValidationException('Finished events cannot be updated.');
+    }
+
     if (command.startsAt !== undefined || command.endsAt !== undefined) {
       const timeSlot = this.createTimeSlot(
         command.startsAt ?? current.timeSlot.startsAt,
