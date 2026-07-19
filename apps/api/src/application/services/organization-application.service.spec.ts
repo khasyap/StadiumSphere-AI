@@ -24,9 +24,12 @@ describe('OrganizationApplicationService', () => {
     await expect(service.create({ name: 'New Organization' })).resolves.toMatchObject({
       id: expect.any(String),
     });
-    await expect(service.findAll()).resolves.toHaveLength(1);
-    await expect(service.findById('organization-1')).resolves.toMatchObject({
+    await expect(service.findAll()).resolves.toEqual([
+      { id: 'organization-1', name: 'StadiumSphere Sports' },
+    ]);
+    await expect(service.findById('organization-1')).resolves.toEqual({
       id: 'organization-1',
+      name: 'StadiumSphere Sports',
     });
     await expect(service.update('organization-1', { name: 'Updated Organization' })).resolves.toMatchObject({
       id: 'organization-1',

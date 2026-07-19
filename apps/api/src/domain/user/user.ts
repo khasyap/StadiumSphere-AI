@@ -1,4 +1,5 @@
 import { AggregateRoot } from '../aggregate-root/aggregate-root';
+import type { EntityTimestamps } from '../entity/entity';
 import type { UniqueEntityId } from '../identifier/unique-entity-id';
 import type { Email } from '../value-object/email';
 import { UserRole } from './user-role';
@@ -27,7 +28,12 @@ export class User extends AggregateRoot<UserProps> {
     return this.props.role ?? UserRole.USER;
   }
 
-  public override toJSON(): Readonly<{ email: Email; id: string }> {
-    return Object.freeze({ email: this.props.email, id: this.id.toString() });
+  public override toJSON(): Readonly<{ email: Email; id: string; role: UserRole } & EntityTimestamps> {
+    return Object.freeze({
+      ...this.timestampsToJSON(),
+      email: this.props.email,
+      id: this.id.toString(),
+      role: this.role,
+    });
   }
 }

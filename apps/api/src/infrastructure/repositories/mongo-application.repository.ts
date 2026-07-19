@@ -1,5 +1,5 @@
 import type { ApplicationRepository } from '../../application';
-import type { UniqueEntityId } from '../../domain';
+import { Entity, type UniqueEntityId } from '../../domain';
 import { BaseRepository } from '../persistence';
 import type { FilterOptions } from '../persistence';
 import type { PersistenceMapper, PersistenceRecord } from '../mappers/persistence-mapper.interface';
@@ -61,14 +61,34 @@ export abstract class MongoApplicationRepository<
   }
 
   private mapToDomain(document: HydratedDocument<TPersistence>): TDomain {
-    const persisted = document as HydratedDocument<TPersistence> & {
+    const persisted = (
+      typeof document.toObject === 'function' ? document.toObject() : document
+    ) as TPersistence & {
       _id: { toString(): string };
+      createdAt?: Date;
       id?: string;
+      updatedAt?: Date;
     };
 
-    return this.mapper.toDomain({
+    const entity = this.mapper.toDomain({
       ...(persisted as TPersistence),
       id: persisted.id ?? persisted._id.toString(),
     } as PersistenceRecord<TPersistence>);
+
+    if (entity instanceof Entity) {
+      const timestamps: { createdAt?: Date; updatedAt?: Date } = {};
+
+      if (persisted.createdAt !== undefined) {
+        timestamps.createdAt = persisted.createdAt;
+      }
+
+      if (persisted.updatedAt !== undefined) {
+        timestamps.updatedAt = persisted.updatedAt;
+      }
+
+      entity.hydrateTimestamps(timestamps);
+    }
+
+    return entity;
   }
 }

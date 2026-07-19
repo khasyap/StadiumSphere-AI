@@ -1,0 +1,15 @@
+import { Bell, CalendarClock, HeartPulse, Sparkles, Zap } from 'lucide-react';
+import type { ReactNode } from 'react';
+
+import { GlassCard, InsightCard } from './cards';
+import { ActivityBadge, HealthIndicator, MetricCard, StatusBadge } from './metrics';
+
+export function SystemHealthTile({ healthy = true }: { healthy?: boolean }) { return <GlassCard className="p-5"><p className="text-xs font-semibold uppercase tracking-[.16em] text-slate-400">Platform health</p><div className="mt-4 flex items-center justify-between"><HealthIndicator healthy={healthy} label={healthy ? 'All systems ready' : 'Attention needed'} /><HeartPulse className="text-cyan-500" size={22} /></div></GlassCard>; }
+export function UpcomingEventTile({ title = 'Upcoming operational window' }: { title?: string }) { return <GlassCard className="p-5"><div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-slate-400">Next on the platform</p><p className="mt-3 font-semibold">{title}</p><p className="mt-1 text-sm text-slate-500 dark:text-slate-300">Schedule details appear when event data is connected.</p></div><CalendarClock className="text-cyan-500" size={22} /></div></GlassCard>; }
+export function AIRecommendationCard({ children }: { children: ReactNode }) { return <InsightCard title="Recommended next step"><div className="flex gap-3"><Sparkles size={18} className="mt-1 shrink-0 text-cyan-500" />{children}</div></InsightCard>; }
+export function RecentActivityWidget({ items }: { items: readonly string[] }) { return <GlassCard className="p-5"><p className="text-sm font-semibold">Recent activity</p><div className="mt-4 space-y-3">{items.map((item) => <div key={item} className="flex items-center justify-between gap-3"><ActivityBadge label={item} /><span className="text-[10px] uppercase tracking-wide text-slate-400">Now</span></div>)}</div></GlassCard>; }
+export function QuickActionWidget({ children }: { children: ReactNode }) { return <GlassCard className="p-5"><div className="flex items-center gap-2"><Zap size={17} className="text-cyan-500" /><p className="text-sm font-semibold">Quick action</p></div><div className="mt-4">{children}</div></GlassCard>; }
+export function NotificationWidget({ label = 'No new notifications' }: { label?: string }) { return <GlassCard className="flex items-center gap-3 p-5"><span className="grid h-10 w-10 place-items-center rounded-xl bg-violet-500/10 text-violet-500"><Bell size={18} /></span><div><p className="text-sm font-semibold">Notifications</p><p className="mt-1 text-sm text-slate-500 dark:text-slate-300">{label}</p></div></GlassCard>; }
+export function PlatformStatusWidget({ status = 'Foundation ready' }: { status?: string }) { return <MetricCard label="Platform status" value={status} trend={{ positive: true, value: 'Ready' }} />; }
+export function StatusCell({ label, tone = 'neutral' }: { label: string; tone?: 'danger' | 'neutral' | 'success' | 'warning' }) { return <StatusBadge label={label} tone={tone} />; }
+export const MetricTile = MetricCard;

@@ -1,4 +1,5 @@
 import { AggregateRoot } from '../aggregate-root/aggregate-root';
+import type { EntityTimestamps } from '../entity/entity';
 import type { UniqueEntityId } from '../identifier/unique-entity-id';
 import type { Capacity } from '../value-object/capacity';
 import { StadiumStatus } from './stadium-status';
@@ -23,8 +24,9 @@ export class Stadium extends AggregateRoot<StadiumProps> {
     id: string;
     name: string;
     status: StadiumStatus;
-  }> {
+  } & EntityTimestamps> {
     return Object.freeze({
+      ...this.timestampsToJSON(),
       capacity: this.props.capacity,
       id: this.id.toString(),
       name: this.props.name,

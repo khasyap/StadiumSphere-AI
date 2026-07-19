@@ -1,4 +1,5 @@
 import { AggregateRoot } from '../aggregate-root/aggregate-root';
+import type { EntityTimestamps } from '../entity/entity';
 import type { UniqueEntityId } from '../identifier/unique-entity-id';
 import type { GeoLocation } from '../value-object/geo-location';
 import type { TimeSlot } from '../value-object/time-slot';
@@ -30,14 +31,15 @@ export class Venue extends AggregateRoot<VenueProps> {
     name: string;
     reservationTimeSlot?: TimeSlot;
     status: VenueStatus;
-  }> {
+  } & EntityTimestamps> {
     const venue: {
       id: string;
       location: GeoLocation;
       name: string;
       reservationTimeSlot?: TimeSlot;
       status: VenueStatus;
-    } = {
+    } & EntityTimestamps = {
+      ...this.timestampsToJSON(),
       id: this.id.toString(),
       location: this.props.location,
       name: this.props.name,

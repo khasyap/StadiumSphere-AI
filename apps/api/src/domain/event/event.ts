@@ -1,4 +1,5 @@
 import { AggregateRoot } from '../aggregate-root/aggregate-root';
+import type { EntityTimestamps } from '../entity/entity';
 import type { UniqueEntityId } from '../identifier/unique-entity-id';
 import type { TimeSlot } from '../value-object/time-slot';
 import { EventStatus } from './event-status';
@@ -23,8 +24,9 @@ export class Event extends AggregateRoot<EventProps> {
     name: string;
     status: EventStatus;
     timeSlot: TimeSlot;
-  }> {
+  } & EntityTimestamps> {
     return Object.freeze({
+      ...this.timestampsToJSON(),
       id: this.id.toString(),
       name: this.props.name,
       status: this.status,
